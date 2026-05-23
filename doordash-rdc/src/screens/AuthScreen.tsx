@@ -10,12 +10,14 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { COLORS, SPACING, BORDER_RADIUS, FONT_SIZES } from '../theme';
+import { useSettings } from '../context/SettingsContext';
 import type { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../context/AuthContext';
 import { isDriverApp } from '../config/appVariant';
@@ -42,7 +44,9 @@ export default function AuthScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { login, register, isAuthenticated, loading: authLoading } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const { settings } = useSettings();
   const [loginId, setLoginId] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');

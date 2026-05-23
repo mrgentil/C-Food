@@ -4,11 +4,19 @@
 <div id="sidebar" class="sidebar shrink-0 bg-white w-[var(--sidebar-w)] shadow-sm flex flex-col border-r border-gray-200">
     <div class="p-5 border-b border-gray-200 flex items-center justify-between gap-2">
         <div class="flex items-center gap-3 min-w-0">
-            <div class="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center shadow-sm shrink-0">
-                <span class="text-white font-bold text-lg">D</span>
-            </div>
+            @php
+                $globalSettings = \App\Models\Setting::whereIn('key', ['app_logo', 'primary_color'])->pluck('value', 'key');
+                $appLogo = $globalSettings['app_logo'] ?? null;
+            @endphp
+            @if($appLogo)
+                <img src="{{ url($appLogo) }}" alt="Logo" class="w-10 h-10 object-contain shrink-0">
+            @else
+                <div class="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center shadow-sm shrink-0">
+                    <span class="text-white font-bold text-lg">D</span>
+                </div>
+            @endif
             <div class="logo-text min-w-0">
-                <span class="font-bold text-lg text-gray-900 tracking-tight block truncate">Merchant Portal</span>
+                <span class="font-bold text-lg text-gray-900 tracking-tight block truncate">Admin Panel</span>
                 <span class="text-[10px] font-medium text-gray-500 uppercase tracking-widest">Administration</span>
             </div>
         </div>
@@ -25,6 +33,7 @@
                 <p class="nav-section-label px-5 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest sidebar-text">Plateforme</p>
 
                 @include('layouts.partials.nav-item', ['href' => route('admin.dashboard'), 'active' => request()->routeIs('admin.dashboard'), 'icon' => $navIcon('M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h12'), 'label' => 'Dashboard'])
+                @include('layouts.partials.nav-item', ['href' => route('admin.settings'), 'active' => request()->routeIs('admin.settings*'), 'icon' => $navIcon('M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z'), 'label' => 'Paramètres App'])
                 @include('layouts.partials.nav-item', ['href' => route('admin.orders'), 'active' => request()->routeIs('admin.orders*'), 'icon' => $navIcon('M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z'), 'label' => 'Commandes'])
                 @include('layouts.partials.nav-item', ['href' => route('admin.users'), 'active' => request()->routeIs('admin.users*'), 'icon' => $navIcon('M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'), 'label' => 'Utilisateurs'])
                 @include('layouts.partials.nav-item', ['href' => route('admin.restaurants'), 'active' => request()->routeIs('admin.restaurants*'), 'icon' => $navIcon('M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'), 'label' => 'Établissements'])

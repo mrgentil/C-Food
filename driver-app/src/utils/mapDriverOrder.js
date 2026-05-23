@@ -18,7 +18,7 @@ export function mapDriverOrder(o, driverId = null) {
     tip: o.tip ?? 0,
     total,
     commission: o.commission ?? Math.round((total || 0) * 0.1),
-    driverId: o.driver_id ?? driverId,
+    driverId: o.driver_id,
     restaurantName: o?.restaurant?.name,
     restaurantAddress: o?.restaurant?.address,
     restaurantLatitude: restaurantLat,

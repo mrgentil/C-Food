@@ -12,6 +12,7 @@ use App\Http\Controllers\AdminMenuCategoryWebController;
 use App\Http\Controllers\AdminMenuItemWebController;
 use App\Http\Controllers\AdminAppTabWebController;
 use App\Http\Controllers\MerchantPromoWebController;
+use App\Http\Controllers\AdminSettingWebController;
 
 // Auth routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -80,6 +81,10 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {
     Route::get('/menu-items/{menuItem}/edit', [AdminMenuItemWebController::class, 'edit'])->name('admin.menuItems.edit');
     Route::put('/menu-items/{menuItem}', [AdminMenuItemWebController::class, 'update'])->name('admin.menuItems.update');
     Route::delete('/menu-items/{menuItem}', [AdminMenuItemWebController::class, 'destroy'])->name('admin.menuItems.destroy');
+
+    // Settings (global)
+    Route::get('/settings', [AdminSettingWebController::class, 'edit'])->name('admin.settings');
+    Route::post('/settings', [AdminSettingWebController::class, 'update'])->name('admin.settings.update');
 });
 
 // Restaurant routes (is_restaurant = true)

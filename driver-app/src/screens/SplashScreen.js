@@ -14,12 +14,16 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DRIVER_COLORS, DRIVER_GRADIENTS } from '../theme/driverTheme';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
+import { useSettings } from '../contexts/SettingsContext';
 
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const SplashScreen = ({ navigation }) => {
   const { isAuthenticated } = useAuth();
+  const { colors, isDark } = useTheme();
+  const { settings } = useSettings();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const logoScale = useRef(new Animated.Value(0.6)).current;
   const logoY = useRef(new Animated.Value(24)).current;
@@ -166,7 +170,7 @@ const SplashScreen = ({ navigation }) => {
         />
         <View style={styles.logoWrap}>
           <Image
-            source={require('../../assets/logo.png')}
+            source={settings?.app_logo ? { uri: settings.app_logo } : require('../../assets/logo.png')}
             style={styles.logo}
             resizeMode="contain"
           />

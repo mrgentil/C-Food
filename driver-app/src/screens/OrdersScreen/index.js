@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import { useNavigation } from "@react-navigation/native";
 import * as navigationUtils from "../../utils/navigationUtils";
 
 import { useAuth } from "../../contexts/AuthContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import * as Location from "expo-location";
 import api from "../../services/api";
 import { config } from "../../config";
@@ -33,7 +34,7 @@ import * as Notifications from "expo-notifications";
 const estimatedCommission = (total) =>
   new Intl.NumberFormat("fr-CD").format(Math.round((total || 0) * 0.1)) + " FC";
 
-const OrderCard = ({ order, driverProfile, handleAcceptOrder, rejectOrder, isOffline }) => {
+const OrderCard = ({ order, driverProfile, handleAcceptOrder, rejectOrder, isOffline, styles }) => {
   const isAssigned = order.driverId === driverProfile?.id;
   const earnText = estimatedCommission(order.total);
   // Fix: "My Order" is any order assigned to me, not just 'picked_up'
@@ -132,6 +133,8 @@ const OrderCard = ({ order, driverProfile, handleAcceptOrder, rejectOrder, isOff
 };
 
 const OrdersScreen = ({ navigation }) => {
+  const { colors, isDark } = useTheme();
+  const styles = getStyles(colors, isDark);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -145,6 +148,11 @@ const OrdersScreen = ({ navigation }) => {
 
   const { driverProfile, toggleOnlineStatus } = useAuth();
 
+  const isOnlineRef = useRef(driverProfile?.isOnline);
+  useEffect(() => {
+    isOnlineRef.current = driverProfile?.isOnline;
+  }, [driverProfile?.isOnline]);
+
   /** Zone de service = profil driver (pas le GPS), pour éviter les filtres USA/RDC. */
   const serviceCity = driverProfile?.city || "Kinshasa";
   const visibleRadiusKm = config.DELIVERY_VISIBLE_RADIUS_KM;
@@ -154,8 +162,26 @@ const OrdersScreen = ({ navigation }) => {
     const loadLocation = async () => {
       setLocationLoading(true);
       try {
+        const servicesEnabled = await Location.hasServicesEnabledAsync();
+        if (!servicesEnabled) {
+          Alert.alert(
+            "GPS désactivé",
+            "Veuillez activer le GPS de votre téléphone pour pouvoir recevoir et accepter des commandes.",
+            [{ text: "OK" }]
+          );
+          try {
+            await Location.enableNetworkProviderAsync();
+          } catch (e) {
+            console.log("Impossible d'ouvrir le menu GPS automatiquement", e);
+          }
+        }
+
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
+          Alert.alert(
+            "Permission requise",
+            "L'application a besoin d'accéder à votre position pour fonctionner correctement."
+          );
           console.log("Permission GPS refusée — fallback Kinshasa");
           setDriverLocation({ latitude: -4.3250, longitude: 15.3222 });
           return;
@@ -283,6 +309,10 @@ const OrdersScreen = ({ navigation }) => {
 
         channel = echoInstance.private(`driver-orders.${serviceCity}`);
         channel.listen('.order.available', async (data) => {
+          if (!isOnlineRef.current) {
+            console.log("Commande reçue mais ignorée car le livreur est HORS LIGNE");
+            return;
+          }
           console.log("Nouvelle commande en temps réel reçue:", data);
           setRefreshTick((prev) => prev + 1);
 
@@ -448,6 +478,7 @@ const OrdersScreen = ({ navigation }) => {
               handleAcceptOrder={handleAcceptOrder} 
               rejectOrder={rejectOrder} 
               isOffline={isOffline}
+              styles={styles}
             />
           )}
           contentContainerStyle={styles.listContent}
@@ -485,10 +516,10 @@ const OrdersScreen = ({ navigation }) => {
 
 export default OrdersScreen;
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F4F7FE' },
-  loadingContainer: { flex: 1, backgroundColor: '#F4F7FE', justifyContent: 'center', alignItems: 'center' },
-  loadingText: { marginTop: 12, color: '#6B7280', fontSize: 14 },
+const getStyles = (colors, isDark) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background || '#F4F7FE' },
+  loadingContainer: { flex: 1, backgroundColor: colors.background || '#F4F7FE', justifyContent: 'center', alignItems: 'center' },
+  loadingText: { marginTop: 12, color: colors.textSecondary || '#6B7280', fontSize: 14 },
   dashHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',

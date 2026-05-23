@@ -19,6 +19,7 @@ import { fetchDrivingRoute } from "../../utils/osrmDirections";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import * as ImagePicker from 'expo-image-picker';
 import api from "../../services/api";
 import { config } from "../../config";
@@ -32,6 +33,7 @@ import { distanceMeters, formatDistance, ARRIVAL_RADIUS_M, etaMinutesFromMeters 
 import { formatPrice } from "../../utils/formatters";
 import { mapDriverOrder } from "../../utils/mapDriverOrder";
 import { DriverOrderReceipt } from "../../components/DriverOrderReceipt";
+import DeliverySuccessModal from "../../components/DeliverySuccessModal";
 
 const OSM_TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 
@@ -54,6 +56,8 @@ function getActiveDestination(status, restaurant, delivery) {
 }
 
 const OrderDelivery = ({ navigation, route }) => {
+  const { colors, isDark } = useTheme();
+  const styles = getStyles(colors, isDark);
   const { order: orderParam, readOnly } = route.params || {};
   const [orderDetail, setOrderDetail] = useState(orderParam || null);
   const order = orderDetail || orderParam;
@@ -61,6 +65,7 @@ const OrderDelivery = ({ navigation, route }) => {
     readOnly || order?.status === "delivered" || order?.status === "cancelled";
   const { driverProfile } = useAuth();
 
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [receiptLoading, setReceiptLoading] = useState(
     !!orderParam?.id && orderParam.paymentStatus == null
   );
@@ -581,11 +586,7 @@ const OrderDelivery = ({ navigation, route }) => {
                       text: "Confirmer",
                       onPress: async () => {
                         await updateOrderStatus("delivered", { cashCollected: true });
-                        Alert.alert(
-                          "Bravo !",
-                          "Livraison et encaissement enregistrés.",
-                          [{ text: "OK", onPress: () => navigation.goBack() }]
-                        );
+                          setShowSuccessModal(true);
                       },
                     },
                   ]
@@ -604,9 +605,7 @@ const OrderDelivery = ({ navigation, route }) => {
               text: "Oui, livrée",
               onPress: async () => {
                 await updateOrderStatus("delivered");
-                Alert.alert("Bravo !", "Livraison effectuée avec succès !", [
-                  { text: "OK", onPress: () => navigation.goBack() },
-                ]);
+                  setShowSuccessModal(true);
               },
             },
           ]
@@ -663,7 +662,18 @@ const OrderDelivery = ({ navigation, route }) => {
       <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color="#3FC060" />
         <Text style={{ marginTop: 12, color: '#64748B' }}>Chargement…</Text>
-      </SafeAreaView>
+      
+      <DeliverySuccessModal 
+        visible={showSuccessModal} 
+        onClose={() => {
+            setShowSuccessModal(false);
+            navigation.goBack();
+        }}
+        orderTotal={order?.total}
+        colors={colors}
+        isDark={isDark}
+      />
+    </SafeAreaView>
     );
   }
 
@@ -707,7 +717,7 @@ const OrderDelivery = ({ navigation, route }) => {
             <Polyline
               coordinates={routePolyline}
               strokeWidth={5}
-              strokeColor="#0EA5E9"
+              strokecolor={colors.primary}
               lineCap="round"
               lineJoin="round"
             />
@@ -724,7 +734,7 @@ const OrderDelivery = ({ navigation, route }) => {
             </Marker>
           ) : null}
           <Marker coordinate={restaurantLocation} title={order.restaurantName}>
-            <View style={[styles.marker, { backgroundColor: (orderStatus === 'preparing' || orderStatus === 'arrived_at_restaurant') ? '#0EA5E9' : '#6B7280' }]}>
+            <View style={[styles.marker, { backgroundColor: (orderStatus === 'preparing' || orderStatus === 'arrived_at_restaurant') ? colors.primary : colors.textSecondary }]}>
               <MaterialIcons name="restaurant" size={20} color="white" />
             </View>
           </Marker>
@@ -741,7 +751,7 @@ const OrderDelivery = ({ navigation, route }) => {
               {order.userPhotoURL ? (
                 <Image source={{ uri: order.userPhotoURL }} style={styles.clientMapPhoto} />
               ) : (
-                <View style={[styles.marker, { backgroundColor: (orderStatus === 'picked_up' || orderStatus === 'arrived_at_customer') ? '#0EA5E9' : '#111C44' }]}>
+                <View style={[styles.marker, { backgroundColor: (orderStatus === 'picked_up' || orderStatus === 'arrived_at_customer') ? colors.primary : colors.text }]}>
                   <FontAwesome5 name="user" size={18} color="white" />
                 </View>
               )}
@@ -751,13 +761,13 @@ const OrderDelivery = ({ navigation, route }) => {
 
         {!driverLocation ? (
           <View style={styles.mapLoading}>
-            <ActivityIndicator size="small" color="#0EA5E9" />
+            <ActivityIndicator size="small" color={colors.primary} />
             <Text style={styles.mapLoadingText}>Acquisition GPS…</Text>
           </View>
         ) : null}
 
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#111C44" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
 
         <View style={[styles.liveBadge, isTrackingServer && styles.liveBadgeOn]}>
@@ -796,7 +806,7 @@ const OrderDelivery = ({ navigation, route }) => {
               }, 400);
             }}
           >
-            <Ionicons name="locate" size={22} color="#0EA5E9" />
+            <Ionicons name="locate" size={22} color={colors.primary} />
           </TouchableOpacity>
         ) : null}
 
@@ -848,7 +858,7 @@ const OrderDelivery = ({ navigation, route }) => {
           <TouchableOpacity 
             onPress={() => openMap(order.restaurantLatitude, order.restaurantLongitude, order.restaurantName)}
           >
-            <Ionicons name="navigate-circle" size={40} color="#0EA5E9" />
+            <Ionicons name="navigate-circle" size={40} color={colors.primary} />
           </TouchableOpacity>
         </View>
 
@@ -877,13 +887,13 @@ const OrderDelivery = ({ navigation, route }) => {
           </View>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <View style={[styles.clientRow, { flex: 1, paddingRight: 10 }]}>
-              <FontAwesome5 name="map-marker-alt" size={16} color="#0EA5E9" />
+              <FontAwesome5 name="map-marker-alt" size={16} color={colors.primary} />
               <Text style={styles.clientAddress}>{order.userAddress}</Text>
             </View>
             <TouchableOpacity 
               onPress={() => openMap(order.userLatitude, order.userLongitude, clientFullName)}
             >
-              <Ionicons name="navigate-circle" size={40} color="#0EA5E9" />
+              <Ionicons name="navigate-circle" size={40} color={colors.primary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -918,7 +928,7 @@ const OrderDelivery = ({ navigation, route }) => {
                 <Image source={{ uri: proofImage }} style={styles.proofPreview} />
               ) : (
                 <View style={styles.cameraPlaceholder}>
-                  <Ionicons name="camera" size={32} color="#6B7280" />
+                  <Ionicons name="camera" size={32} color={colors.textSecondary} />
                   <Text style={styles.cameraText}>Prendre une photo</Text>
                 </View>
               )}
@@ -928,11 +938,11 @@ const OrderDelivery = ({ navigation, route }) => {
               style={styles.galleryButton}
               disabled={uploadingProof}
             >
-              <Ionicons name="images-outline" size={18} color="#0EA5E9" />
+              <Ionicons name="images-outline" size={18} color={colors.primary} />
               <Text style={styles.galleryButtonText}>Choisir depuis la galerie</Text>
             </TouchableOpacity>
             {uploadingProof ? (
-              <ActivityIndicator size="small" color="#0EA5E9" style={{ marginTop: 8 }} />
+              <ActivityIndicator size="small" color={colors.primary} style={{ marginTop: 8 }} />
             ) : proofImage ? (
               <Text style={styles.photoTakenText}>Photo prête — vous pouvez livrer ✅</Text>
             ) : (
@@ -948,8 +958,8 @@ const OrderDelivery = ({ navigation, route }) => {
             <Text style={[styles.contactText, { color: '#3B82F6' }]}>Appeler</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={openChat} style={[styles.contactButton, { backgroundColor: '#F0F9FF', position: 'relative' }]}>
-            <Ionicons name="chatbubble" size={20} color="#0EA5E9" />
-            <Text style={[styles.contactText, { color: '#0EA5E9' }]}>Message</Text>
+            <Ionicons name="chatbubble" size={20} color={colors.primary} />
+            <Text style={[styles.contactText, { color: colors.primary }]}>Message</Text>
             {unreadCount > 0 && (
               <View style={{
                 position: 'absolute',
@@ -962,9 +972,9 @@ const OrderDelivery = ({ navigation, route }) => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 borderWidth: 2,
-                borderColor: 'white'
+                bordercolor: colors.textInverse
               }}>
-                <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>!</Text>
+                <Text style={{ color: colors.textInverse, fontSize: 10, fontWeight: 'bold' }}>!</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -1001,22 +1011,22 @@ const OrderDelivery = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F4F7FE' },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#111C44' },
-  loadingText: { color: 'white', marginTop: 16 },
-  marker: { padding: 8, borderRadius: 20, borderWidth: 3, borderColor: 'white' },
-  driverPhoto: { width: 44, height: 44, borderRadius: 22, borderWidth: 3, borderColor: '#0EA5E9' },
+const getStyles = (colors, isDark) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.text },
+  loadingText: { color: colors.textInverse, marginTop: 16 },
+  marker: { padding: 8, borderRadius: 20, borderWidth: 3, bordercolor: colors.textInverse },
+  driverPhoto: { width: 44, height: 44, borderRadius: 22, borderWidth: 3, borderColor: colors.primary },
   driverMarker: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#0EA5E9',
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
-    borderColor: '#FFF',
-    shadowColor: '#0EA5E9',
+    bordercolor: colors.textInverse,
+    shadowColor: colors.primary,
     shadowOpacity: 0.45,
     shadowRadius: 8,
     elevation: 8,
@@ -1028,12 +1038,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   mapLoadingText: { marginTop: 8, color: '#64748B', fontSize: 13, fontWeight: '600' },
-  backButton: { position: 'absolute', top: 50, left: 20, backgroundColor: 'white', padding: 12, borderRadius: 16, zIndex: 5 },
+  backButton: { position: 'absolute', top: 50, left: 20, backgroundColor: colors.surface, padding: 12, borderRadius: 16, zIndex: 5 },
   recenterBtn: {
     position: 'absolute',
     bottom: 16,
     right: 16,
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     padding: 12,
     borderRadius: 24,
     shadowColor: '#000',
@@ -1058,7 +1068,7 @@ const styles = StyleSheet.create({
   liveBadgeOn: { backgroundColor: '#ECFDF5' },
   liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#CBD5E1' },
   liveDotOn: { backgroundColor: '#22C55E' },
-  liveText: { fontSize: 11, fontWeight: '700', color: '#334155' },
+  liveText: { fontSize: 11, fontWeight: '700', color: colors.textSecondary },
   distanceBanner: {
     position: 'absolute',
     top: 88,
@@ -1077,12 +1087,12 @@ const styles = StyleSheet.create({
     zIndex: 6,
   },
   distanceBannerArrived: { backgroundColor: '#ECFDF5' },
-  distanceBannerText: { fontSize: 14, fontWeight: '800', color: '#0F172A', marginLeft: 6 },
+  distanceBannerText: { fontSize: 14, fontWeight: '800', color: colors.text, marginLeft: 6 },
   distanceBannerTextArrived: { color: '#047857' },
   distanceBannerEta: { fontSize: 12, fontWeight: '600', color: '#64748B' },
   deliveryPinWrap: { alignItems: 'center', maxWidth: 220 },
   addressMapCallout: {
-    backgroundColor: '#FFF',
+    backgroundColor: colors.surface,
     paddingHorizontal: 10,
     paddingVertical: 8,
     borderRadius: 10,
@@ -1098,18 +1108,18 @@ const styles = StyleSheet.create({
   addressMapCalloutTitle: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#0EA5E9',
+    color: colors.primary,
     letterSpacing: 0.5,
     marginBottom: 4,
     textTransform: 'uppercase',
   },
-  addressMapCalloutText: { fontSize: 11, fontWeight: '600', color: '#334155', lineHeight: 15 },
+  addressMapCalloutText: { fontSize: 11, fontWeight: '600', color: colors.textSecondary, lineHeight: 15 },
   clientMapPhoto: {
     width: 40,
     height: 40,
     borderRadius: 20,
     borderWidth: 3,
-    borderColor: '#FFF',
+    bordercolor: colors.textInverse,
   },
   gpsTime: {
     position: 'absolute',
@@ -1126,11 +1136,11 @@ const styles = StyleSheet.create({
   },
   statusBadge: { position: 'absolute', top: 132, right: 12, left: 12, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, alignItems: 'center', zIndex: 4 },
   statusText: { fontWeight: 'bold', fontSize: 12 },
-  detailsContainer: { flex: 1, backgroundColor: 'white', borderTopLeftRadius: 30, borderTopRightRadius: 30, marginTop: -20, paddingHorizontal: 20, paddingTop: 20 },
-  statsRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  detailsContainer: { flex: 1, backgroundColor: colors.surface, borderTopLeftRadius: 30, borderTopRightRadius: 30, marginTop: -20, paddingHorizontal: 20, paddingTop: 20 },
+  statsRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: colors.border },
   statItem: { alignItems: 'center', marginHorizontal: 20 },
-  statValue: { fontSize: 24, fontWeight: 'bold', color: '#111C44' },
-  statLabel: { color: '#6B7280', fontSize: 12 },
+  statValue: { fontSize: 24, fontWeight: 'bold', color: colors.text },
+  statLabel: { color: colors.textSecondary, fontSize: 12 },
   statHighlight: {
     alignItems: 'center',
     paddingHorizontal: 16,
@@ -1140,28 +1150,28 @@ const styles = StyleSheet.create({
     minWidth: 110,
   },
   statHighlightArrived: { backgroundColor: '#ECFDF5' },
-  statHighlightValue: { fontSize: 22, fontWeight: '800', color: '#0EA5E9' },
+  statHighlightValue: { fontSize: 22, fontWeight: '800', color: colors.primary },
   statHighlightValueArrived: { color: '#059669' },
   statHighlightLabel: { fontSize: 11, color: '#64748B', fontWeight: '600', marginTop: 2 },
-  sectionTitle: { fontSize: 20, fontWeight: 'bold', color: '#111C44', marginTop: 16 },
-  sectionSubtitle: { color: '#6B7280', marginBottom: 16 },
-  clientCard: { backgroundColor: '#F4F7FE', padding: 16, borderRadius: 16, marginBottom: 16 },
+  sectionTitle: { fontSize: 20, fontWeight: 'bold', color: colors.text, marginTop: 16 },
+  sectionSubtitle: { color: colors.textSecondary, marginBottom: 16 },
+  clientCard: { backgroundColor: colors.background, padding: 16, borderRadius: 16, marginBottom: 16 },
   clientHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  clientAvatar: { width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: '#0EA5E9' },
+  clientAvatar: { width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: colors.primary },
   clientAvatarPlaceholder: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#0EA5E9',
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  clientAvatarInitials: { color: '#FFF', fontWeight: '800', fontSize: 18 },
+  clientAvatarInitials: { color: colors.textInverse, fontWeight: '800', fontSize: 18 },
   clientHeaderText: { flex: 1, marginLeft: 14 },
-  clientDistance: { marginTop: 4, fontSize: 13, fontWeight: '700', color: '#0EA5E9' },
+  clientDistance: { marginTop: 4, fontSize: 13, fontWeight: '700', color: colors.primary },
   clientRow: { flexDirection: 'row', alignItems: 'flex-start' },
-  clientName: { fontWeight: '700', color: '#111C44', fontSize: 17 },
-  clientAddress: { marginLeft: 12, color: '#6B7280', flex: 1 },
+  clientName: { fontWeight: '700', color: colors.text, fontSize: 17 },
+  clientAddress: { marginLeft: 12, color: colors.textSecondary, flex: 1 },
   contactRow: { flexDirection: 'row', marginBottom: 16 },
   contactButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 14, borderRadius: 12, marginHorizontal: 4 },
   contactText: { marginLeft: 8, fontWeight: '600' },
@@ -1173,7 +1183,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
-  paymentCardTitle: { fontSize: 14, fontWeight: '700', color: '#111C44', marginBottom: 8 },
+  paymentCardTitle: { fontSize: 14, fontWeight: '700', color: colors.text, marginBottom: 8 },
   paymentBadgeRow: { flexDirection: 'row', marginBottom: 6 },
   paymentPill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   paymentPillPaid: { backgroundColor: '#DCFCE7' },
@@ -1182,11 +1192,11 @@ const styles = StyleSheet.create({
   paymentPillTextPaid: { color: '#166534' },
   paymentPillTextPending: { color: '#B45309' },
   paymentMeta: { fontSize: 12, color: '#64748B', marginTop: 4 },
-  totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
-  totalLabel: { color: '#6B7280' },
+  totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderTopWidth: 1, borderTopColor: colors.border },
+  totalLabel: { color: colors.textSecondary },
   totalValue: { fontSize: 24, fontWeight: 'bold', color: '#3FC060' },
   actionButton: { position: 'absolute', bottom: 30, left: 20, right: 20, paddingVertical: 18, borderRadius: 16, alignItems: 'center' },
-  actionText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+  actionText: { color: colors.textInverse, fontWeight: 'bold', fontSize: 16 },
   proofContainer: { marginBottom: 16, alignItems: "center", width: "100%" },
   proofTitle: { fontSize: 15, fontWeight: "700", color: "#111827", marginBottom: 4, alignSelf: "flex-start" },
   proofRequired: { color: "#EF4444" },
@@ -1201,10 +1211,10 @@ const styles = StyleSheet.create({
   },
   galleryButtonText: { fontSize: 14, fontWeight: "600", color: "#0EA5E9" },
   photoMissingText: { fontSize: 12, color: "#B45309", marginTop: 8, fontWeight: "600" },
-  photoButton: { width: '100%', height: 200, backgroundColor: '#F3F4F6', borderRadius: 16, overflow: 'hidden', justifyContent: 'center', alignItems: 'center', borderStyle: 'dashed', borderWidth: 2, borderColor: '#D1D5DB' },
+  photoButton: { width: '100%', height: 200, backgroundColor: colors.border, borderRadius: 16, overflow: 'hidden', justifyContent: 'center', alignItems: 'center', borderStyle: 'dashed', borderWidth: 2, borderColor: '#D1D5DB' },
   proofPreview: { width: '100%', height: '100%', resizeMode: 'cover' },
   cameraPlaceholder: { alignItems: 'center' },
-  cameraText: { color: '#6B7280', marginTop: 8, fontWeight: '500' },
+  cameraText: { color: colors.textSecondary, marginTop: 8, fontWeight: '500' },
   photoTakenText: { color: '#10B981', fontWeight: 'bold', marginTop: 4, alignSelf: 'flex-end' }
 });
 

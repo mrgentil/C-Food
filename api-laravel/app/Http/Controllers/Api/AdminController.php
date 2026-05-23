@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller as BaseController;
 use App\Models\Order;
+use App\Events\OrderAvailable;
 use App\Models\User;
 use App\Models\Restaurant;
 use Illuminate\Http\Request;
@@ -95,6 +96,10 @@ class AdminController extends BaseController
         }
         OrderPayment::syncPaidAt($order);
         $order->save();
+
+        if ($validated['status'] === 'preparing' && empty($order->driver_id)) {
+            broadcast(new OrderAvailable($order));
+        }
 
         // Notify customer (best-effort)
         try {

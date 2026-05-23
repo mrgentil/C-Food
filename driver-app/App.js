@@ -12,6 +12,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Navigation from "./src/navigation";
 import { AuthProvider } from "./src/contexts/AuthContext";
 import { NotificationProvider } from "./src/contexts/NotificationContext";
+import { ThemeProvider } from "./src/contexts/ThemeContext";
+import { SettingsProvider } from "./src/contexts/SettingsContext";
 import api from "./src/services/api";
 import { View, Text, LogBox } from "react-native";
 
@@ -101,12 +103,16 @@ export default function App() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <NavigationContainer ref={navigationRef}>
           <SafeAreaProvider>
-            <AuthProvider>
-              <NotificationProvider navigationRef={navigationRef}>
-                <Navigation />
-                <StatusBar style="light" />
-              </NotificationProvider>
-            </AuthProvider>
+            <SettingsProvider>
+              <ThemeProvider>
+                <AuthProvider>
+                  <NotificationProvider navigationRef={navigationRef}>
+                    <Navigation />
+                    {/* StatusBar handled per screen or dynamically inside */}
+                  </NotificationProvider>
+                </AuthProvider>
+              </ThemeProvider>
+            </SettingsProvider>
           </SafeAreaProvider>
         </NavigationContainer>
       </GestureHandlerRootView>

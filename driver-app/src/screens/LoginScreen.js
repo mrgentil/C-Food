@@ -14,19 +14,23 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
+import api from "../services/api";
+import { useSettings } from '../contexts/SettingsContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import { DRIVER_GRADIENTS } from '../theme/driverTheme';
 
-const InputField = ({ icon, placeholder, value, onChangeText, secureTextEntry, keyboardType, autoCapitalize, showPassword, setShowPassword }) => {
+const InputField = ({ icon, placeholder, value, onChangeText, secureTextEntry, keyboardType, autoCapitalize, showPassword, setShowPassword, colors, isDark, styles }) => {
     const [isFocused, setIsFocused] = useState(false);
     return (
         <View style={[styles.inputContainer, isFocused && styles.inputContainerFocused]}>
-            <Ionicons name={icon} size={20} color={isFocused ? "#0EA5E9" : "#94A3B8"} style={styles.inputIcon} />
+            <Ionicons name={icon} size={20} color={isFocused ? colors.primary : colors.textMuted} style={styles.inputIcon} />
             <TextInput
                 value={value}
                 onChangeText={onChangeText}
                 placeholder={placeholder}
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor={colors.textMuted}
                 keyboardType={keyboardType || 'default'}
                 autoCapitalize={autoCapitalize || 'none'}
                 secureTextEntry={secureTextEntry && !showPassword}
@@ -39,7 +43,7 @@ const InputField = ({ icon, placeholder, value, onChangeText, secureTextEntry, k
                     <Ionicons
                         name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                         size={20}
-                        color="#94A3B8"
+                        color={colors.textMuted}
                     />
                 </TouchableOpacity>
             )}
@@ -54,7 +58,14 @@ const LoginScreen = () => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
+    const { login } = useAuth();
+    const { settings } = useSettings();
+
+    const insets = useSafeAreaInsets();
+
     const { signIn } = useAuth();
+    const { colors, isDark } = useTheme();
+    const styles = getStyles(colors, isDark);
 
     const handleLogin = async () => {
         if (!loginId.trim() || !password) {
@@ -74,13 +85,15 @@ const LoginScreen = () => {
         setLoading(false);
     };
 
+    const gradientColors = isDark ? DRIVER_GRADIENTS.loginDark : DRIVER_GRADIENTS.loginLight;
+
     return (
         <LinearGradient
-            colors={['#F0F9FF', '#E0F2FE', '#FFFFFF']}
+            colors={gradientColors}
             style={styles.container}
         >
             <SafeAreaView style={styles.safeArea}>
-                <StatusBar style="dark" />
+                <StatusBar style={isDark ? "light" : "dark"} />
                 <KeyboardAvoidingView
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                     style={{ flex: 1 }}
@@ -92,7 +105,7 @@ const LoginScreen = () => {
                     >
                         <View style={styles.headerSection}>
                             <View style={styles.logoWrap}>
-                                <Image source={require('../../assets/logo.png')} style={styles.logo} resizeMode="contain" />
+                                <Image source={settings?.app_logo ? { uri: settings.app_logo } : require('../../assets/logo.png')} style={styles.logo} resizeMode="contain" />
                             </View>
                             <Text style={styles.title}>C-FOOD Driver</Text>
                             <Text style={styles.subtitle}>Espace Livreur</Text>
@@ -101,7 +114,7 @@ const LoginScreen = () => {
                         <View style={styles.card}>
                             {error ? (
                                 <View style={styles.errorContainer}>
-                                    <Ionicons name="alert-circle" size={18} color="#EF4444" />
+                                    <Ionicons name="alert-circle" size={18} color={colors.error} />
                                     <Text style={styles.errorText}>{error}</Text>
                                 </View>
                             ) : null}
@@ -115,6 +128,9 @@ const LoginScreen = () => {
                                     keyboardType="default"
                                     showPassword={showPassword}
                                     setShowPassword={setShowPassword}
+                                    colors={colors}
+                                    isDark={isDark}
+                                    styles={styles}
                                 />
 
                                 <InputField
@@ -125,6 +141,9 @@ const LoginScreen = () => {
                                     secureTextEntry
                                     showPassword={showPassword}
                                     setShowPassword={setShowPassword}
+                                    colors={colors}
+                                    isDark={isDark}
+                                    styles={styles}
                                 />
                                 
                                 <Text style={styles.hintText}>
@@ -151,7 +170,7 @@ const LoginScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors, isDark) => StyleSheet.create({
     container: {
         flex: 1,
     },
@@ -181,38 +200,38 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 32,
         fontWeight: '900',
-        color: '#0284C7',
+        color: colors.primary,
         letterSpacing: 0.5,
     },
     subtitle: {
-        color: '#64748B',
+        color: colors.textSecondary,
         marginTop: 6,
         fontSize: 16,
         fontWeight: '500',
         letterSpacing: 0.5,
     },
     card: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.surface,
         borderRadius: 24,
         padding: 24,
-        shadowColor: '#000',
+        shadowColor: colors.shadow,
         shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.05,
+        shadowOpacity: isDark ? 0.3 : 0.05,
         shadowRadius: 20,
         elevation: 8,
     },
     errorContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FEF2F2',
+        backgroundColor: isDark ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2',
         padding: 14,
         borderRadius: 12,
         marginBottom: 20,
         borderWidth: 1,
-        borderColor: '#FECACA'
+        borderColor: isDark ? 'rgba(239, 68, 68, 0.3)' : '#FECACA'
     },
     errorText: {
-        color: '#EF4444',
+        color: colors.error,
         marginLeft: 8,
         flex: 1,
         fontWeight: '500'
@@ -223,17 +242,17 @@ const styles = StyleSheet.create({
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F8FAFC',
+        backgroundColor: isDark ? colors.surfaceSecondary : '#F8FAFC',
         borderRadius: 16,
         paddingHorizontal: 16,
         paddingVertical: 16,
         marginBottom: 16,
         borderWidth: 1.5,
-        borderColor: '#F1F5F9',
+        borderColor: isDark ? colors.border : '#F1F5F9',
     },
     inputContainerFocused: {
-        borderColor: '#0EA5E9',
-        backgroundColor: '#F0F9FF',
+        borderColor: colors.primary,
+        backgroundColor: isDark ? colors.background : '#F0F9FF',
     },
     inputIcon: {
         marginRight: 12,
@@ -241,21 +260,21 @@ const styles = StyleSheet.create({
     input: {
         flex: 1,
         fontSize: 16,
-        color: '#0F172A',
+        color: colors.text,
         fontWeight: '500',
     },
     hintText: {
-        color: '#94A3B8',
+        color: colors.textMuted,
         fontSize: 13,
         textAlign: 'center',
         marginBottom: 20,
     },
     submitButton: {
-        backgroundColor: '#0EA5E9',
+        backgroundColor: colors.primary,
         borderRadius: 16,
         paddingVertical: 18,
         alignItems: 'center',
-        shadowColor: '#0EA5E9',
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.3,
         shadowRadius: 12,

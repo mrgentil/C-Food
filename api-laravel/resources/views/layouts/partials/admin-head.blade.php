@@ -1,3 +1,7 @@
+@php
+    $globalSettings = \App\Models\Setting::whereIn('key', ['app_logo', 'primary_color'])->pluck('value', 'key');
+    $primaryColor = $globalSettings['primary_color'] ?? '#EB1700'; // DoorDash Red par défaut
+@endphp
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -16,7 +20,7 @@
                         200: '#F8A599',
                         300: '#F47766',
                         400: '#F14A33',
-                        500: '#EB1700', // DoorDash Red
+                        500: '{{ $primaryColor }}',
                         600: '#D11500',
                         700: '#B81200',
                         800: '#9E0F00',

@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 import api from "../services/api";
 import { DRIVER_COLORS } from "../theme/driverTheme";
 import * as navigationUtils from "../utils/navigationUtils";
@@ -18,6 +19,9 @@ import { formatPrice, formatDate } from "../utils/formatters";
 
 export default function EarningsScreen({ navigation }) {
   const { driverProfile } = useAuth();
+  const { colors, isDark } = useTheme();
+  const styles = getStyles(colors, isDark);
+  
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [balance, setBalance] = useState(0);
@@ -53,8 +57,8 @@ export default function EarningsScreen({ navigation }) {
 
   const renderTransaction = ({ item }) => (
     <View style={styles.transactionCard}>
-      <View style={[styles.iconContainer, { backgroundColor: "#DCFCE7" }]}>
-        <MaterialCommunityIcons name="arrow-down-left" size={22} color="#166534" />
+      <View style={[styles.iconContainer, { backgroundColor: isDark ? 'rgba(34, 197, 94, 0.15)' : '#DCFCE7' }]}>
+        <MaterialCommunityIcons name="arrow-down-left" size={22} color={isDark ? '#4ADE80' : '#166534'} />
       </View>
       <View style={styles.transactionContent}>
         <Text style={styles.transactionTitle}>Commission course</Text>
@@ -94,15 +98,15 @@ export default function EarningsScreen({ navigation }) {
         style={styles.linkRow}
         onPress={() => navigationUtils.navigateToTab("History")}
       >
-        <Ionicons name="time-outline" size={20} color={DRIVER_COLORS.primary} />
+        <Ionicons name="time-outline" size={20} color={colors.primary} />
         <Text style={styles.linkText}>Voir l'historique complet</Text>
-        <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
       </TouchableOpacity>
 
       <Text style={styles.sectionTitle}>Dernières commissions</Text>
 
       {loading ? (
-        <ActivityIndicator style={{ marginTop: 24 }} color={DRIVER_COLORS.primary} />
+        <ActivityIndicator style={{ marginTop: 24 }} color={colors.primary} />
       ) : (
         <FlatList
           data={transactions}
@@ -110,7 +114,7 @@ export default function EarningsScreen({ navigation }) {
           renderItem={renderTransaction}
           contentContainerStyle={styles.list}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} />
+            <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} colors={[colors.primary]} tintColor={colors.primary} />
           }
           ListEmptyComponent={
             <Text style={styles.empty}>Aucune commission pour le moment</Text>
@@ -121,40 +125,40 @@ export default function EarningsScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F4F7FE" },
+const getStyles = (colors, isDark) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 12 },
-  title: { fontSize: 24, fontWeight: "800", color: "#111C44" },
-  subtitle: { fontSize: 14, color: "#64748B", marginTop: 2 },
+  title: { fontSize: 24, fontWeight: "800", color: colors.text },
+  subtitle: { fontSize: 14, color: colors.textSecondary, marginTop: 2 },
   heroCard: {
     marginHorizontal: 16,
-    backgroundColor: "#111C44",
+    backgroundColor: isDark ? colors.surfaceSecondary : "#111C44",
     borderRadius: 20,
     padding: 20,
     marginBottom: 12,
   },
-  heroLabel: { color: "#94A3B8", fontSize: 13, fontWeight: "600" },
+  heroLabel: { color: isDark ? colors.textMuted : "#94A3B8", fontSize: 13, fontWeight: "600" },
   heroAmount: { color: "#4ADE80", fontSize: 32, fontWeight: "800", marginTop: 4 },
-  heroRow: { flexDirection: "row", marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: "#1E293B" },
+  heroRow: { flexDirection: "row", marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: isDark ? colors.border : "#1E293B" },
   statBox: { flex: 1, alignItems: "center" },
-  statDivider: { width: 1, backgroundColor: "#334155" },
-  statValue: { color: "#F8FAFC", fontSize: 16, fontWeight: "700" },
-  statLabel: { color: "#94A3B8", fontSize: 11, marginTop: 4 },
+  statDivider: { width: 1, backgroundColor: isDark ? colors.border : "#334155" },
+  statValue: { color: isDark ? colors.text : "#F8FAFC", fontSize: 16, fontWeight: "700" },
+  statLabel: { color: isDark ? colors.textSecondary : "#94A3B8", fontSize: 11, marginTop: 4 },
   linkRow: {
     flexDirection: "row",
     alignItems: "center",
     marginHorizontal: 16,
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     padding: 14,
     borderRadius: 14,
     marginBottom: 12,
     gap: 8,
   },
-  linkText: { flex: 1, fontSize: 14, fontWeight: "600", color: "#111C44" },
+  linkText: { flex: 1, fontSize: 14, fontWeight: "600", color: colors.text },
   sectionTitle: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#64748B",
+    color: colors.textSecondary,
     marginHorizontal: 20,
     marginBottom: 8,
     textTransform: "uppercase",
@@ -164,17 +168,17 @@ const styles = StyleSheet.create({
   transactionCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     borderRadius: 14,
     padding: 14,
     marginBottom: 8,
   },
   iconContainer: { padding: 10, borderRadius: 12, marginRight: 12 },
   transactionContent: { flex: 1 },
-  transactionTitle: { fontSize: 14, fontWeight: "600", color: "#111C44" },
-  transactionRef: { fontSize: 12, color: "#94A3B8", marginTop: 2 },
+  transactionTitle: { fontSize: 14, fontWeight: "600", color: colors.text },
+  transactionRef: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
   transactionRight: { alignItems: "flex-end" },
-  transactionAmount: { fontSize: 14, fontWeight: "700", color: "#166534" },
-  transactionDate: { fontSize: 11, color: "#94A3B8", marginTop: 2 },
-  empty: { textAlign: "center", color: "#94A3B8", marginTop: 24 },
+  transactionAmount: { fontSize: 14, fontWeight: "700", color: isDark ? '#4ADE80' : "#166534" },
+  transactionDate: { fontSize: 11, color: colors.textMuted, marginTop: 2 },
+  empty: { textAlign: "center", color: colors.textMuted, marginTop: 24 },
 });

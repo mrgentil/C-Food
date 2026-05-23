@@ -1,4 +1,5 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { useTheme } from "../contexts/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import OrdersScreen from "../screens/OrdersScreen";
 import EarningsScreen from "../screens/EarningsScreen";
@@ -9,15 +10,17 @@ import { DRIVER_COLORS } from "../theme/driverTheme";
 const Tab = createBottomTabNavigator();
 
 export default function DriverTabs() {
+  const { colors, isDark } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: DRIVER_COLORS.primary,
-        tabBarInactiveTintColor: "#94A3B8",
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
-          backgroundColor: "#FFFFFF",
-          borderTopColor: "#E2E8F0",
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
           height: 60,
           paddingBottom: 8,
           paddingTop: 6,

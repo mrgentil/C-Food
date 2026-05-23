@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\DriverMessageController;
 use App\Http\Controllers\Api\DriverProfileController;
 use App\Http\Controllers\Api\DriverHistoryController;
 use App\Http\Controllers\Api\DriverWalletController;
+use App\Http\Controllers\Api\SettingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +40,7 @@ Route::get('/test', function () {
 });
 
 // Public routes
+Route::get('/settings', [SettingController::class, 'index']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
 

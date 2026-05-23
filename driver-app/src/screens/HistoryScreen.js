@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 import api from "../services/api";
 import { mapDriverOrder } from "../utils/mapDriverOrder";
 import { formatPrice, formatDate } from "../utils/formatters";
@@ -30,20 +31,20 @@ const PERIOD_FILTERS = [
   { key: "month", label: "Mois" },
 ];
 
-const STATUS_CONFIG = {
+const getStatusConfig = (isDark) => ({
   delivered: {
     label: "Livrée",
-    badgeBg: "#DCFCE7",
-    badgeColor: "#166534",
+    badgeBg: isDark ? "rgba(22, 101, 52, 0.3)" : "#DCFCE7",
+    badgeColor: isDark ? "#4ADE80" : "#166534",
     icon: "checkmark-circle",
   },
   cancelled: {
     label: "Annulée",
-    badgeBg: "#FEE2E2",
-    badgeColor: "#991B1B",
+    badgeBg: isDark ? "rgba(153, 27, 27, 0.3)" : "#FEE2E2",
+    badgeColor: isDark ? "#F87171" : "#991B1B",
     icon: "close-circle",
   },
-};
+});
 
 const HistoryScreen = ({ navigation, route }) => {
   const tabRoot = route?.params?.tabRoot;
@@ -54,7 +55,11 @@ const HistoryScreen = ({ navigation, route }) => {
   const [period, setPeriod] = useState("all");
   const [meta, setMeta] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
+  
   const { driverProfile } = useAuth();
+  const { colors, isDark } = useTheme();
+  const styles = getStyles(colors, isDark);
+  const STATUS_CONFIG = getStatusConfig(isDark);
 
   const fetchHistory = useCallback(async () => {
     if (!driverProfile?.id) return;
@@ -108,7 +113,7 @@ const HistoryScreen = ({ navigation, route }) => {
       >
         <View style={styles.row}>
           <View style={styles.iconContainer}>
-            <MaterialIcons name="restaurant" size={20} color="#0EA5E9" />
+            <MaterialIcons name="restaurant" size={20} color={colors.primary} />
           </View>
           <View style={styles.content}>
             <Text style={styles.restaurantName}>
@@ -130,8 +135,8 @@ const HistoryScreen = ({ navigation, route }) => {
               </Text>
             </View>
           ) : (
-            <View style={[styles.badge, { backgroundColor: "#FEF2F2" }]}>
-              <Text style={[styles.badgeText, { color: "#B91C1C" }]}>
+            <View style={[styles.badge, { backgroundColor: isDark ? 'rgba(153, 27, 27, 0.15)' : "#FEF2F2" }]}>
+              <Text style={[styles.badgeText, { color: isDark ? "#F87171" : "#B91C1C" }]}>
                 Course non finalisée
               </Text>
             </View>
@@ -147,7 +152,7 @@ const HistoryScreen = ({ navigation, route }) => {
                 style={styles.cameraIcon}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <Ionicons name="camera" size={20} color="#0EA5E9" />
+                <Ionicons name="camera" size={20} color={colors.primary} />
                 <Text style={styles.cameraText}>Preuve</Text>
               </TouchableOpacity>
             ) : null}
@@ -178,7 +183,7 @@ const HistoryScreen = ({ navigation, route }) => {
             onPress={() => navigation.goBack()}
             style={styles.backButton}
           >
-            <Ionicons name="arrow-back" size={24} color="#111C44" />
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
         ) : (
           <View style={{ width: 40 }} />
@@ -248,7 +253,7 @@ const HistoryScreen = ({ navigation, route }) => {
 
       {loading ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#0EA5E9" />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : (
         <FlatList
@@ -257,11 +262,11 @@ const HistoryScreen = ({ navigation, route }) => {
           renderItem={renderItem}
           contentContainerStyle={styles.list}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} tintColor={colors.primary} />
           }
           ListEmptyComponent={
             <View style={styles.centered}>
-              <Ionicons name="time-outline" size={48} color="#CBD5E1" />
+              <Ionicons name="time-outline" size={48} color={colors.textMuted} />
               <Text style={styles.emptyText}>{emptyMessage}</Text>
               <Text style={styles.emptyHint}>
                 Seules les courses assignées à vous apparaissent ici
@@ -294,16 +299,16 @@ const HistoryScreen = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F4F7FE" },
+const getStyles = (colors, isDark) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     padding: 16,
   },
-  backButton: { padding: 8, backgroundColor: "white", borderRadius: 12 },
-  title: { fontSize: 18, fontWeight: "bold", color: "#111C44" },
+  backButton: { padding: 8, backgroundColor: colors.surface, borderRadius: 12 },
+  title: { fontSize: 18, fontWeight: "bold", color: colors.text },
   periodRow: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -315,30 +320,30 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 20,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: "#E2E8F0",
+    borderColor: colors.border,
   },
   periodChipActive: {
-    backgroundColor: "#111C44",
-    borderColor: "#111C44",
+    backgroundColor: colors.text,
+    borderColor: colors.text,
   },
-  periodChipText: { fontSize: 13, fontWeight: "600", color: "#64748B" },
-  periodChipTextActive: { color: "#fff" },
+  periodChipText: { fontSize: 13, fontWeight: "600", color: colors.textSecondary },
+  periodChipTextActive: { color: colors.surface },
   summaryBar: {
     marginHorizontal: 16,
     marginBottom: 10,
-    backgroundColor: "#ECFDF5",
+    backgroundColor: isDark ? "rgba(5, 150, 105, 0.15)" : "#ECFDF5",
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderWidth: 1,
-    borderColor: "#A7F3D0",
+    borderColor: isDark ? "rgba(16, 185, 129, 0.3)" : "#A7F3D0",
   },
   summaryText: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#166534",
+    color: isDark ? "#34D399" : "#166534",
     textAlign: "center",
   },
   filterRow: {
@@ -352,16 +357,16 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 8,
     borderRadius: 12,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     alignItems: "center",
   },
-  filterChipActive: { backgroundColor: "#0EA5E9" },
-  filterChipText: { fontSize: 12, fontWeight: "600", color: "#64748B" },
+  filterChipActive: { backgroundColor: colors.primary },
+  filterChipText: { fontSize: 12, fontWeight: "600", color: colors.textSecondary },
   filterChipTextActive: { color: "white" },
   list: { padding: 16, paddingTop: 0 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24 },
   card: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -369,30 +374,30 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center" },
   iconContainer: {
     padding: 10,
-    backgroundColor: "#F0F9FF",
+    backgroundColor: isDark ? colors.surfaceSecondary : "#F0F9FF",
     borderRadius: 12,
     marginRight: 12,
   },
   content: { flex: 1 },
-  restaurantName: { fontSize: 16, fontWeight: "bold", color: "#111C44" },
-  location: { fontSize: 12, color: "#64748B", marginTop: 2 },
-  date: { fontSize: 12, color: "#A3AED0", marginTop: 2 },
+  restaurantName: { fontSize: 16, fontWeight: "bold", color: colors.text },
+  location: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
+  date: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
   price: { fontSize: 16, fontWeight: "bold", color: "#05CD99" },
-  divider: { height: 1, backgroundColor: "#F3F4F6", marginVertical: 12 },
+  divider: { height: 1, backgroundColor: colors.border, marginVertical: 12 },
   footerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
   badge: {
-    backgroundColor: "#F4F7FE",
+    backgroundColor: isDark ? colors.surfaceSecondary : "#F4F7FE",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
     flex: 1,
     marginRight: 8,
   },
-  badgeText: { fontSize: 10, color: "#A3AED0", fontWeight: "bold" },
+  badgeText: { fontSize: 10, color: colors.textMuted, fontWeight: "bold" },
   statusBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -402,9 +407,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   statusText: { fontSize: 10, fontWeight: "bold" },
-  emptyText: { color: "#64748B", fontSize: 16, marginTop: 12, fontWeight: "600" },
+  emptyText: { color: colors.textSecondary, fontSize: 16, marginTop: 12, fontWeight: "600" },
   emptyHint: {
-    color: "#A3AED0",
+    color: colors.textMuted,
     fontSize: 13,
     marginTop: 8,
     textAlign: "center",
@@ -413,12 +418,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginRight: 10,
-    backgroundColor: "#F0F9FF",
+    backgroundColor: isDark ? colors.surfaceSecondary : "#F0F9FF",
     padding: 4,
     borderRadius: 8,
   },
   cameraText: {
-    color: "#0EA5E9",
+    color: colors.primary,
     fontSize: 10,
     fontWeight: "bold",
     marginLeft: 4,

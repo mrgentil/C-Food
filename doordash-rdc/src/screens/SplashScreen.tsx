@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { COLORS } from '../theme';
+import LottieView from 'lottie-react-native';
+import { useSettings } from '../context/SettingsContext';
 
 const { width } = Dimensions.get('window');
 
@@ -20,6 +22,7 @@ interface SplashScreenProps {
 
 export default function SplashScreen({ isAppReady, onFinish }: SplashScreenProps) {
   const [entranceDone, setEntranceDone] = useState(false);
+  const { settings } = useSettings();
   
   const logoScale = useRef(new Animated.Value(0.3)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
@@ -124,7 +127,7 @@ export default function SplashScreen({ isAppReady, onFinish }: SplashScreenProps
           ]}
         >
           <Image
-            source={require('../../assets/logo.png')}
+            source={settings.app_logo ? { uri: settings.app_logo } : require('../../assets/logo.png')}
             style={styles.logo}
             resizeMode="contain"
           />
