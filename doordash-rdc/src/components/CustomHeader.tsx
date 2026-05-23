@@ -28,12 +28,12 @@ export default function CustomHeader({
 
   return (
     <>
-      <StatusBar barStyle={transparent ? 'light-content' : 'dark-content'} backgroundColor={transparent ? 'transparent' : COLORS.background} />
+      <StatusBar barStyle="light-content" backgroundColor={transparent ? 'transparent' : '#000000'} />
       <View style={[styles.container, transparent && styles.transparent]}>
         <View style={styles.left}>
           {showBack && (
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color={transparent ? '#FFF' : COLORS.text} />
+              <Ionicons name="arrow-back" size={24} color="#ffffff" />
             </TouchableOpacity>
           )}
           <Text style={[styles.title, transparent && styles.transparentTitle]} numberOfLines={1}>{title}</Text>
@@ -63,9 +63,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
     paddingTop: 50,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#000000',
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderLight,
+    borderBottomColor: '#1c1c1e',
   },
   transparent: {
     backgroundColor: 'transparent',
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZES.xl,
     fontWeight: '700',
-    color: COLORS.text,
+    color: '#ffffff',
   },
   transparentTitle: {
     color: '#FFF',

@@ -75,7 +75,7 @@ export default function OrderPlacedScreen() {
 
           <TouchableOpacity
             style={styles.homeButton}
-            onPress={() => navigation.navigate('Home')}
+            onPress={() => navigation.navigate('Main')}
           >
             <Text style={styles.homeButtonText}>Retour à l'accueil</Text>
           </TouchableOpacity>
@@ -88,7 +88,7 @@ export default function OrderPlacedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#000000',
   },
   content: {
     flex: 1,
@@ -102,13 +102,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZES.xxxl,
     fontWeight: '800',
-    color: COLORS.text,
+    color: '#ffffff',
     marginBottom: SPACING.md,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: FONT_SIZES.md,
-    color: COLORS.textSecondary,
+    color: '#8e8e93',
     textAlign: 'center',
     marginBottom: SPACING.xl,
     lineHeight: 24,
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   infoCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.card,
+    backgroundColor: '#1c1c1e',
     width: '100%',
     padding: SPACING.md,
     borderRadius: BORDER_RADIUS.md,
@@ -129,13 +129,13 @@ const styles = StyleSheet.create({
   },
   infoTitle: {
     fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
+    color: '#8e8e93',
     marginBottom: SPACING.xs,
   },
   infoText: {
     fontSize: FONT_SIZES.lg,
     fontWeight: '600',
-    color: COLORS.text,
+    color: '#ffffff',
   },
   buttons: {
     width: '100%',

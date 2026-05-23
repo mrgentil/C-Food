@@ -160,6 +160,11 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        <TouchableOpacity style={[styles.logoutButton, { marginTop: SPACING.md, backgroundColor: COLORS.backgroundSecondary, borderRadius: BORDER_RADIUS.md, borderWidth: 1, borderColor: COLORS.border }]} onPress={() => navigation.navigate('Onboarding' as never)}>
+          <Ionicons name="phone-portrait-outline" size={22} color={COLORS.primary} />
+          <Text style={[styles.logoutText, { color: COLORS.primary }]}>Revoir l'Onboarding (Dev)</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={22} color={COLORS.error} />
           <Text style={styles.logoutText}>Se déconnecter</Text>
@@ -176,13 +181,15 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center', paddingVertical: SPACING.xl,
     backgroundColor: COLORS.backgroundSecondary,
+    borderBottomWidth: 1, borderBottomColor: COLORS.border,
   },
-  avatar: { width: 80, height: 80, borderRadius: 40, marginBottom: SPACING.md },
+  avatar: { width: 90, height: 90, borderRadius: 45, marginBottom: SPACING.md, borderWidth: 3, borderColor: COLORS.primary },
   name: { fontSize: FONT_SIZES.xxl, fontWeight: '700', color: COLORS.text, marginBottom: SPACING.xs },
   email: { fontSize: FONT_SIZES.md, color: COLORS.textSecondary, marginBottom: SPACING.sm },
   stats: {
-    flexDirection: 'row', backgroundColor: COLORS.card,
+    flexDirection: 'row', backgroundColor: COLORS.backgroundSecondary,
     margin: SPACING.md, borderRadius: BORDER_RADIUS.md, padding: SPACING.md, ...SHADOWS,
+    borderWidth: 1, borderColor: COLORS.border,
   },
   statItem: { flex: 1, alignItems: 'center' },
   statValue: { fontSize: FONT_SIZES.xxl, fontWeight: '700', color: COLORS.text, marginBottom: SPACING.xs },
@@ -192,11 +199,12 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: SPACING.md, paddingVertical: SPACING.md,
-    borderBottomWidth: 1, borderBottomColor: COLORS.borderLight, gap: SPACING.md,
+    borderBottomWidth: 1, borderBottomColor: COLORS.border, gap: SPACING.md,
   },
   iconContainer: {
     width: 40, height: 40, borderRadius: BORDER_RADIUS.md,
-    backgroundColor: COLORS.backgroundSecondary, justifyContent: 'center', alignItems: 'center',
+    backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1, borderColor: COLORS.border,
   },
   menuLabel: { flex: 1, fontSize: FONT_SIZES.md, color: COLORS.text },
   paymentSection: { marginTop: SPACING.lg, padding: SPACING.md },
@@ -206,6 +214,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: COLORS.backgroundSecondary, paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm, borderRadius: BORDER_RADIUS.md, gap: SPACING.sm,
+    borderWidth: 1, borderColor: COLORS.border,
   },
   paymentName: { fontSize: FONT_SIZES.sm, fontWeight: '500', color: COLORS.text },
   logoutButton: {
@@ -213,5 +222,5 @@ const styles = StyleSheet.create({
     margin: SPACING.xl, padding: SPACING.md, gap: SPACING.sm,
   },
   logoutText: { fontSize: FONT_SIZES.md, fontWeight: '600', color: COLORS.error },
-  version: { textAlign: 'center', fontSize: FONT_SIZES.sm, color: COLORS.textLight, marginBottom: SPACING.xl },
+  version: { textAlign: 'center', fontSize: FONT_SIZES.sm, color: '#636366', marginBottom: SPACING.xl },
 });

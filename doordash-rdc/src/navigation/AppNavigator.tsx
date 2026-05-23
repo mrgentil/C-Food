@@ -59,6 +59,7 @@ import {
   AdminOrderDetailScreen,
   AdminUsersScreen,
   AdminRestaurantsScreen,
+  GenericGridScreen,
   SplashScreen,
 } from '../screens';
 import type { RootStackParamList } from './types';
@@ -89,7 +90,8 @@ function TabNavigator() {
         tabBarInactiveTintColor: COLORS.textLight,
         tabBarStyle: {
           borderTopWidth: 1,
-          borderTopColor: COLORS.borderLight,
+          borderTopColor: '#1c1c1e',
+          backgroundColor: '#000000',
           paddingBottom: 8,
           paddingTop: 8,
           height: 60,
@@ -166,10 +168,6 @@ export default function AppNavigator() {
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         <Stack.Screen name="Auth" component={AuthScreen} />
         <Stack.Screen name="Main" component={TabNavigator} />
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Search" component={SearchScreen} />
-        <Stack.Screen name="Orders" component={OrdersScreen} />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen
           name="Restaurant"
           component={RestaurantScreen}
@@ -207,6 +205,7 @@ export default function AppNavigator() {
           options={{ animation: 'slide_from_right' }}
         />
         <Stack.Screen name="StoreList" component={StoreListScreen} />
+        <Stack.Screen name="GenericGrid" component={GenericGridScreen} />
         <Stack.Screen name="Grocery" component={GroceryScreen} />
         <Stack.Screen name="GroceryDetail" component={GroceryDetailScreen} />
         <Stack.Screen name="Alcohol" component={AlcoholScreen} />

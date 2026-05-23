@@ -192,7 +192,7 @@ export default function OrdersScreen() {
               </Text>
               <TouchableOpacity
                 style={styles.emptyButton}
-                onPress={() => navigation.navigate('Home')}
+                onPress={() => navigation.navigate('Main')}
               >
                 <Text style={styles.emptyButtonText}>Parcourir les restaurants</Text>
               </TouchableOpacity>
@@ -208,7 +208,7 @@ export default function OrdersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#000000',
   },
   header: {
     paddingHorizontal: SPACING.md,
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   tabs: {
     flexDirection: 'row',
     marginHorizontal: SPACING.md,
-    backgroundColor: COLORS.backgroundSecondary,
+    backgroundColor: '#1c1c1e',
     borderRadius: BORDER_RADIUS.md,
     padding: 4,
   },
@@ -228,12 +228,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tabActive: {
-    backgroundColor: COLORS.background,
+    backgroundColor: '#2c2c2e',
   },
   tabText: {
     fontSize: FONT_SIZES.sm,
     fontWeight: '700',
-    color: COLORS.textSecondary,
+    color: '#8e8e93',
   },
   tabTextActive: {
     color: COLORS.primary,
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZES.xxxl,
     fontWeight: '700',
-    color: COLORS.text,
+    color: '#ffffff',
   },
   section: {
     marginTop: SPACING.lg,
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FONT_SIZES.lg,
     fontWeight: '600',
-    color: COLORS.textSecondary,
+    color: '#8e8e93',
     paddingHorizontal: SPACING.md,
     marginBottom: SPACING.md,
     textTransform: 'uppercase',
@@ -257,11 +257,13 @@ const styles = StyleSheet.create({
   },
   orderCard: {
     flexDirection: 'row',
-    backgroundColor: COLORS.card,
+    backgroundColor: '#1c1c1e',
     marginHorizontal: SPACING.md,
     marginBottom: SPACING.md,
     borderRadius: BORDER_RADIUS.md,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#2c2c2e',
     ...SHADOWS,
   },
   restaurantImage: {
@@ -282,7 +284,7 @@ const styles = StyleSheet.create({
   restaurantName: {
     fontSize: FONT_SIZES.lg,
     fontWeight: '600',
-    color: COLORS.text,
+    color: '#ffffff',
     flex: 1,
     marginRight: SPACING.sm,
   },
@@ -300,12 +302,12 @@ const styles = StyleSheet.create({
   },
   orderDetails: {
     fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
+    color: '#8e8e93',
     marginBottom: SPACING.xs,
   },
   orderDate: {
     fontSize: FONT_SIZES.sm,
-    color: COLORS.textLight,
+    color: '#636366',
     marginBottom: SPACING.sm,
   },
   trackButton: {
@@ -336,13 +338,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: FONT_SIZES.xxl,
     fontWeight: '700',
-    color: COLORS.text,
+    color: '#ffffff',
     marginTop: SPACING.md,
     marginBottom: SPACING.sm,
   },
   emptyText: {
     fontSize: FONT_SIZES.md,
-    color: COLORS.textSecondary,
+    color: '#8e8e93',
     textAlign: 'center',
     marginBottom: SPACING.lg,
   },

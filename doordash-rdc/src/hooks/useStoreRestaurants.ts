@@ -3,7 +3,7 @@ import { restaurantService } from '../services/restaurantService';
 import { mapApiRestaurantToUi } from '../utils/mapApiToUi';
 import type { Restaurant } from '../types/domain';
 
-export function useStoreRestaurants(type: string) {
+export function useStoreRestaurants(filter?: any) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
@@ -12,7 +12,19 @@ export function useStoreRestaurants(type: string) {
     try {
       setLoading(true);
       setError('');
-      const res = await restaurantService.getAll(type);
+      // Si on passe une chaîne simple, c'est pour rétro-compatibilité
+      const type = typeof filter === 'string' ? filter : filter?.type || 'restaurant';
+      
+      // Construire les paramètres de requête
+      const params: any = {};
+      if (typeof filter === 'object' && filter !== null) {
+        if (filter.category) params.category = filter.category;
+        if (filter.brand) params.brand = filter.brand;
+        if (filter.featured) params.featured = 1;
+        // On pourrait ajouter d'autres filtres si supportés par l'API
+      }
+
+      const res = await restaurantService.getAll(type, params);
       const rows = res.data;
       setRestaurants(Array.isArray(rows) ? rows.map(mapApiRestaurantToUi) : []);
     } catch (err: any) {
@@ -21,7 +33,7 @@ export function useStoreRestaurants(type: string) {
     } finally {
       setLoading(false);
     }
-  }, [type]);
+  }, [JSON.stringify(filter)]);
 
   useEffect(() => {
     fetchRestaurants();

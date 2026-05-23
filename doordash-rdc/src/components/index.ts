@@ -7,3 +7,7 @@ export { default as PromoBanner } from './PromoBanner';
 export { default as BottomCartBar } from './BottomCartBar';
 export { default as DeliveryTypeSelector } from './DeliveryTypeSelector';
 export { default as CategorySwitcher } from './CategorySwitcher';
+export { default as QuickFilterPill } from './QuickFilterPill';
+export * from './SectionHeader';
+export * from './ShopTypeCard';
+export * from './EnategaRestaurantCard';

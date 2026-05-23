@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableWithoutFeedback, Image, StyleSheet, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, BORDER_RADIUS, FONT_SIZES, SHADOWS } from '../theme';
 import { Restaurant } from '../types';
 import { favoritesService } from '../services/favoritesService';
+import { TouchableOpacity } from 'react-native';
 
 interface Props {
   restaurant: Restaurant;
@@ -19,6 +20,7 @@ export default function RestaurantCard({
   variant = 'carousel',
 }: Props) {
   const [isFavorite, setIsFavorite] = useState(false);
+  const scaleValue = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (!showFavorite) return;
@@ -39,63 +41,90 @@ export default function RestaurantCard({
     } catch (err) {}
   };
 
+  const onPressIn = () => {
+    Animated.spring(scaleValue, {
+      toValue: 0.96,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const onPressOut = () => {
+    Animated.spring(scaleValue, {
+      toValue: 1,
+      friction: 5,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+  };
+
   return (
-    <TouchableOpacity
-      style={[styles.container, variant === 'list' && styles.containerList]}
+    <TouchableWithoutFeedback
       onPress={onPress}
-      activeOpacity={0.9}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
     >
-      <View style={[styles.imageContainer, variant === 'list' && styles.imageContainerList]}>
-        <Image source={{ uri: restaurant.image }} style={styles.image} />
-        {restaurant.isNew && <View style={[styles.badge, { backgroundColor: COLORS.success }]}><Text style={styles.badgeText}>Nouveau</Text></View>}
-        {restaurant.discount && <View style={[styles.badge, { backgroundColor: COLORS.primary }]}><Text style={styles.badgeText}>{restaurant.discount}</Text></View>}
-        {restaurant.isPromoted && !restaurant.isNew && !restaurant.discount && <View style={[styles.badge, { backgroundColor: COLORS.info }]}><Text style={styles.badgeText}>Promo</Text></View>}
-        {!restaurant.isOpen && <View style={styles.overlay}><Text style={styles.closedText}>Fermé</Text></View>}
-        {showFavorite && (
-          <TouchableOpacity style={styles.heartButton} onPress={toggleFavorite} activeOpacity={0.7}>
-            <Ionicons name={isFavorite ? 'heart' : 'heart-outline'} size={20} color={isFavorite ? COLORS.error : '#FFF'} />
-          </TouchableOpacity>
-        )}
-      </View>
-      <View style={styles.info}>
-        <Text style={styles.name} numberOfLines={1}>{restaurant.name}</Text>
-        <View style={styles.meta}>
-          <View style={styles.ratingContainer}>
-            <Text style={styles.rating}>{restaurant.rating}</Text>
-            <Text style={styles.reviews}>({restaurant.reviewCount})</Text>
+      <Animated.View style={[
+        styles.container,
+        variant === 'list' && styles.containerList,
+        { transform: [{ scale: scaleValue }] }
+      ]}>
+        <View style={[styles.imageContainer, variant === 'list' && styles.imageContainerList]}>
+          <Image source={{ uri: restaurant.image }} style={styles.image} />
+          {restaurant.isNew && <View style={[styles.badge, { backgroundColor: COLORS.success }]}><Text style={styles.badgeText}>Nouveau</Text></View>}
+          {restaurant.discount && <View style={[styles.badge, { backgroundColor: COLORS.primary }]}><Text style={styles.badgeText}>{restaurant.discount}</Text></View>}
+          {restaurant.isPromoted && !restaurant.isNew && !restaurant.discount && <View style={[styles.badge, { backgroundColor: COLORS.info }]}><Text style={styles.badgeText}>Promo</Text></View>}
+          {!restaurant.isOpen && <View style={styles.overlay}><Text style={styles.closedText}>Fermé</Text></View>}
+          {showFavorite && (
+            <TouchableOpacity style={styles.heartButton} onPress={toggleFavorite} activeOpacity={0.7}>
+              <Ionicons name={isFavorite ? 'heart' : 'heart-outline'} size={20} color={isFavorite ? COLORS.error : '#FFF'} />
+            </TouchableOpacity>
+          )}
+        </View>
+        <View style={styles.info}>
+          <View style={styles.nameRow}>
+            <Text style={styles.name} numberOfLines={1}>{restaurant.name}</Text>
+            <View style={styles.ratingBadge}>
+              <Text style={styles.ratingText}>{restaurant.rating}</Text>
+              <Ionicons name="star" size={12} color={COLORS.warning} />
+            </View>
           </View>
-          <Text style={styles.deliveryTime}>{restaurant.deliveryTime}</Text>
+          <View style={styles.meta}>
+            <Text style={styles.deliveryTime}>{restaurant.deliveryTime} • </Text>
+            <Text style={styles.deliveryFee}>{restaurant.deliveryFee === 0 ? 'Livraison gratuite' : `${restaurant.deliveryFee.toLocaleString()} FC`}</Text>
+          </View>
+          <View style={styles.tags}>
+            <Text style={styles.distance}>{restaurant.distance}</Text>
+            <Text style={styles.dot}>•</Text>
+            <Text style={styles.reviews}>({restaurant.reviewCount} avis)</Text>
+          </View>
         </View>
-        <View style={styles.tags}>
-          <Text style={styles.deliveryFee}>{restaurant.deliveryFee === 0 ? 'Livraison gratuite' : `${restaurant.deliveryFee.toLocaleString()} FC`}</Text>
-          <Text style={styles.dot}>•</Text>
-          <Text style={styles.distance}>{restaurant.distance}</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
+      </Animated.View>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    width: 280,
+    width: 290,
     marginHorizontal: SPACING.sm,
-    backgroundColor: COLORS.card,
-    borderRadius: BORDER_RADIUS.md,
+    backgroundColor: '#1c1c1e',
+    borderRadius: BORDER_RADIUS.lg,
     overflow: 'hidden',
     ...SHADOWS.md,
+    borderWidth: 1,
+    borderColor: '#2c2c2e',
   },
   containerList: {
     width: '100%',
     marginHorizontal: 0,
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   imageContainer: {
     position: 'relative',
-    height: 160,
+    height: 170,
   },
   imageContainerList: {
-    height: 190,
+    height: 200,
   },
   image: {
     width: '100%',
@@ -103,84 +132,97 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: 'absolute',
-    top: SPACING.sm,
-    left: SPACING.sm,
+    top: SPACING.md,
+    left: SPACING.md,
     paddingHorizontal: SPACING.sm,
     paddingVertical: 4,
     borderRadius: BORDER_RADIUS.sm,
+    ...SHADOWS.sm,
   },
   badgeText: {
     color: '#FFF',
     fontSize: FONT_SIZES.xs,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: COLORS.overlay,
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: BORDER_RADIUS.md,
   },
   closedText: {
     color: '#FFF',
     fontSize: FONT_SIZES.xl,
     fontWeight: '700',
+    letterSpacing: 1,
   },
   heartButton: {
     position: 'absolute',
     top: SPACING.sm,
     right: SPACING.sm,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(255,255,255,0.9)',
     borderRadius: 20,
-    padding: 6,
+    padding: 8,
+    ...SHADOWS.sm,
   },
   info: {
-    padding: SPACING.sm,
+    padding: SPACING.md,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   name: {
     fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: SPACING.xs,
+    fontWeight: '700',
+    color: '#ffffff',
+    flex: 1,
+    paddingRight: SPACING.sm,
+  },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2c2c2e',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: BORDER_RADIUS.round,
+    gap: 2,
+  },
+  ratingText: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: '700',
+    color: '#ffffff',
   },
   meta: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: SPACING.xs,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  rating: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  reviews: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-    marginLeft: 2,
+    marginBottom: 4,
   },
   deliveryTime: {
     fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
+    fontWeight: '600',
+    color: '#8e8e93',
+  },
+  deliveryFee: {
+    fontSize: FONT_SIZES.sm,
+    color: '#8e8e93',
   },
   tags: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  deliveryFee: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-  },
   dot: {
     marginHorizontal: 4,
-    color: COLORS.textSecondary,
+    color: '#636366',
   },
   distance: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.xs,
+    color: '#636366',
+  },
+  reviews: {
+    fontSize: FONT_SIZES.xs,
+    color: '#636366',
   },
 });

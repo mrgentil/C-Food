@@ -1,5 +1,6 @@
 import type { ApiCategory, ApiMenuItem, ApiMenuItemOption, ApiOrder, ApiOrderItem, ApiRestaurant } from '../types/api';
 import type { CartItem, Category, Driver, MenuItem, MenuItemOption, Order, Restaurant } from '../types/domain';
+import { resolvePhotoUrl } from './mediaUrl';
 
 function toNumber(value: string | number | null | undefined, fallback = 0): number {
   if (value === null || value === undefined) return fallback;
@@ -20,8 +21,8 @@ export function mapApiRestaurantToUi(r: ApiRestaurant): Restaurant {
   return {
     id: r.id,
     name: r.name,
-    image: toStringSafe(r.image, ''),
-    logo: r.logo ?? undefined,
+    image: resolvePhotoUrl(r.image) || '',
+    logo: resolvePhotoUrl(r.logo) || undefined,
     rating: toNumber(r.rating, 0),
     reviewCount: toNumber(r.review_count, 0),
     deliveryTime: toStringSafe(r.delivery_time, '30-40 min'),
@@ -45,7 +46,7 @@ export function mapApiCategoryToUi(c: ApiCategory): Category {
     name: c.name,
     icon: c.icon ?? 'grid-outline',
     color: c.color ?? '#111827',
-    image: c.image ?? undefined,
+    image: resolvePhotoUrl(c.image) || undefined,
   };
 }
 
@@ -86,7 +87,7 @@ export function mapApiMenuItemToUi(item: ApiMenuItem): MenuItem {
     name: item.name,
     description: item.description ?? '',
     price: toNumber(item.price, 0),
-    image: item.image ?? undefined,
+    image: resolvePhotoUrl(item.image) || undefined,
     category: item.category ?? 'Plats',
     isPopular: !!item.is_popular,
     isVeg: !!item.is_veg,

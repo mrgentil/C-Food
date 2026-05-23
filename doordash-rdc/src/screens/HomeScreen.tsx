@@ -1,48 +1,85 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
   StatusBar,
   FlatList,
   ActivityIndicator,
   Image,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { COLORS, SPACING, BORDER_RADIUS, FONT_SIZES, SHADOWS } from '../theme';
-import { RestaurantCard, CategoryItem, PromoBanner, BottomCartBar, CartBadge, DeliveryTypeSelector, CategorySwitcher } from '../components';
-import type { CategoryTabItem } from '../components/CategorySwitcher';
+import { SPACING, BORDER_RADIUS, FONT_SIZES, COLORS } from '../theme';
+import {
+  PromoBanner,
+  BottomCartBar,
+  CartBadge,
+  CategoryItem,
+  SectionHeader,
+  ShopTypeCard,
+  EnategaRestaurantCard,
+} from '../components';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { restaurantService } from '../services/restaurantService';
-import { appTabService, type AppTab } from '../services/appTabService';
-import { mergeAppTabsWithFallback } from '../utils/mergeAppTabs';
+import { shopTypeService, ShopType } from '../services/shopTypeService';
+import { brandService, Brand } from '../services/brandService';
 import type { RootStackParamList } from '../navigation/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { getUserAvatarUri } from '../utils/resolveUserPhotoUrl';
 import { mapApiCategoryToUi, mapApiRestaurantToUi } from '../utils/mapApiToUi';
-import type { Promotion } from '../types';
+import type { Promotion, Restaurant } from '../types';
 import { promoService } from '../services/promoService';
 import type { ApiPromoCode } from '../types/api';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// Bannières publicitaires (à remplacer par des données API plus tard)
+const AD_BANNERS = [
+  {
+    id: '1',
+    image: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800',
+    title: 'Livraison GRATUITE',
+    subtitle: 'Sur votre 1ère commande avec le code BIENVENUE',
+    color: '#0EA5E9',
+  },
+  {
+    id: '2',
+    image: 'https://images.pexels.com/photos/1049620/pexels-photo-1049620.jpeg?auto=compress&cs=tinysrgb&w=800',
+    title: '-30% sur les Pizzas',
+    subtitle: 'Offre limitée ce weekend uniquement',
+    color: '#FF6B00',
+  },
+  {
+    id: '3',
+    image: 'https://images.pexels.com/photos/1639562/pexels-photo-1639562.jpeg?auto=compress&cs=tinysrgb&w=800',
+    title: 'Parrainez un ami',
+    subtitle: 'Gagnez 5000 FC pour chaque ami parrainé',
+    color: '#8B5CF6',
+  },
+  {
+    id: '4',
+    image: 'https://images.pexels.com/photos/264636/pexels-photo-264636.jpeg?auto=compress&cs=tinysrgb&w=800',
+    title: 'Menu du jour',
+    subtitle: 'Découvrez notre sélection spéciale à petit prix',
+    color: '#10B981',
+  },
+];
 
 function formatGeocodedAddress(addr: Location.LocationGeocodedAddress): string {
   const streetLine = [addr.streetNumber, addr.street].filter(Boolean).join(' ').trim();
   const chunks = [
     streetLine || (addr.name?.trim() ?? ''),
-    addr.district,
-    addr.subregion,
     addr.city,
     addr.region,
-    addr.country,
   ]
     .map((s) => (typeof s === 'string' ? s.trim() : ''))
     .filter(Boolean);
@@ -51,30 +88,26 @@ function formatGeocodedAddress(addr: Location.LocationGeocodedAddress): string {
 
 export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const { cartCount, cartTotal, deliveryType, setDeliveryType } = useCart();
+  const { cartCount, cartTotal } = useCart();
   const { user, refreshUser } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
-  const hasCFoodPass = useMemo(() => !!user?.dash_pass, [user?.dash_pass]);
-  const [activeCategory, setActiveCategory] = useState('restaurant');
-  const [appTabs, setAppTabs] = useState<AppTab[]>([]);
-
-  const switcherTabs: CategoryTabItem[] = useMemo(() => {
-    if (appTabs.length > 0) {
-      return mergeAppTabsWithFallback(appTabs);
-    }
-    return mergeAppTabsWithFallback([]);
-  }, [appTabs]);
   const [loading, setLoading] = useState(true);
+  const adBannerRef = useRef<FlatList>(null);
+  const adIndexRef = useRef(0);
   const [error, setError] = useState('');
-  const [featuredRestaurants, setFeaturedRestaurants] = useState<any[]>([]);
-  const [nearRestaurants, setNearRestaurants] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [currentLocation, setCurrentLocation] = useState<string>('Chargement...');
 
+  // Data States
+  const [shopTypes, setShopTypes] = useState<ShopType[]>([]);
+  const [freshFinds, setFreshFinds] = useState<ShopType[]>([]);
+  const [groceryPicks, setGroceryPicks] = useState<ShopType[]>([]);
+  const [ourBrands, setOurBrands] = useState<Brand[]>([]);
+  const [restaurantBrands, setRestaurantBrands] = useState<Brand[]>([]);
+  const [groceryBrands, setGroceryBrands] = useState<Brand[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [promotions, setPromotions] = useState<Array<{ banner: Promotion; promo: ApiPromoCode }>>([]);
+
+  const [currentLocation, setCurrentLocation] = useState<string>('Chargement...');
   const avatarUri = getUserAvatarUri(user?.photo);
-  const [promotions, setPromotions] = useState<Array<{ banner: Promotion; promo: ApiPromoCode }>>(
-    []
-  );
 
   const mapPromoToBanner = (p: ApiPromoCode): Promotion => {
     const discount = p.type === 'percent' ? `${p.value}%` : `${p.value.toLocaleString()} FC`;
@@ -84,7 +117,7 @@ export default function HomeScreen() {
       id: p.code,
       title: `Offre ${discount}`,
       description: `Code: ${p.code}${min}`,
-      image: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=1200',
+      image: 'https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg?auto=compress&cs=tinysrgb&w=800',
       code: p.code,
       discount,
       expiryDate: expiry,
@@ -94,94 +127,57 @@ export default function HomeScreen() {
   const getCurrentLocation = useCallback(async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
-
       if (status !== 'granted') {
         setCurrentLocation((prev) =>
-          prev !== 'Chargement...' && prev.length > 2 ? prev : 'Activez la localisation (réglages)'
+          prev !== 'Chargement...' && prev.length > 2 ? prev : 'Location requise'
         );
         return;
       }
-
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
-
       const { latitude, longitude } = location.coords;
-
       const addresses = await Location.reverseGeocodeAsync({ latitude, longitude });
 
-      let locStr = '';
-      if (addresses?.length) {
-        locStr = formatGeocodedAddress(addresses[0]);
-      }
-      if (!locStr) {
-        locStr = `Position actuelle (${latitude.toFixed(4)}°, ${longitude.toFixed(4)}°)`;
-      }
-
-      setCurrentLocation(locStr);
-
+      let locStr = addresses?.length
+        ? formatGeocodedAddress(addresses[0])
+        : `Position (${latitude.toFixed(2)}, ${longitude.toFixed(2)})`;
+      setCurrentLocation(locStr || 'Position actuelle');
       await AsyncStorage.setItem(
         'user_location',
-        JSON.stringify({
-          latitude,
-          longitude,
-          address: locStr,
-        })
+        JSON.stringify({ latitude, longitude, address: locStr })
       );
     } catch (err) {
-      console.log('Erreur géolocalisation:', err);
-      setCurrentLocation((prev) =>
-        prev !== 'Chargement...' && prev.length > 2 ? prev : 'Impossible de lire la position'
-      );
+      setCurrentLocation('Position inconnue');
     }
   }, []);
 
-  const loadAppTabs = useCallback(async (selectHomeTab = false) => {
-    try {
-      const tabs = await appTabService.listPublished();
-      setAppTabs(tabs);
-      if (selectHomeTab) {
-        const home = tabs.find((t) => t.is_home_tab) || tabs[0];
-        if (home) setActiveCategory(home.slug);
-      }
-    } catch {
-      setAppTabs([]);
-    }
+  // Auto-scroll ad banners
+  useEffect(() => {
+    const interval = setInterval(() => {
+      adIndexRef.current = (adIndexRef.current + 1) % AD_BANNERS.length;
+      adBannerRef.current?.scrollToIndex({
+        index: adIndexRef.current,
+        animated: true,
+      });
+    }, 3500);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
     fetchData();
-    loadAppTabs(true);
   }, []);
 
   useFocusEffect(
     useCallback(() => {
       refreshUser();
       getCurrentLocation();
-      loadAppTabs(false);
-    }, [refreshUser, getCurrentLocation, loadAppTabs])
+    }, [refreshUser, getCurrentLocation])
   );
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const raw = await AsyncStorage.getItem('user_location');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed?.address && typeof parsed.address === 'string') {
-            setCurrentLocation(parsed.address);
-          }
-        }
-      } catch {
-        /* ignore */
-      }
-    })();
-  }, []);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Use last known location to fetch restaurants sorted by distance (\"près de chez vous\").
       let loc: { latitude?: number; longitude?: number } | null = null;
       try {
         const raw = await AsyncStorage.getItem('user_location');
@@ -191,61 +187,86 @@ export default function HomeScreen() {
             loc = { latitude: parsed.latitude, longitude: parsed.longitude };
           }
         }
-      } catch {
-        loc = null;
-      }
+      } catch {}
 
-      const [restaurantsRes, categoriesRes, promosRes] = await Promise.all([
-        restaurantService.getAll('restaurant', loc ? { lat: loc.latitude, lng: loc.longitude, radius_km: 25 } : undefined),
+      const [
+        resRestaurants,
+        resCategories,
+        resPromos,
+        resShopTypes,
+        resFreshFinds,
+        resGroceryPicks,
+        resOurBrands,
+        resRestaurantBrands,
+        resGroceryBrands,
+      ] = await Promise.all([
+        restaurantService.getAll(
+          'restaurant',
+          loc ? { lat: loc.latitude, lng: loc.longitude, radius_km: 25 } : undefined
+        ),
         restaurantService.getCategories(),
         promoService.list().catch(() => ({ data: [] } as any)),
+        shopTypeService.getByCategory('shop_type').catch(() => []),
+        shopTypeService.getByCategory('fresh_finds').catch(() => []),
+        shopTypeService.getByCategory('grocery_picks').catch(() => []),
+        brandService.getByType('our_brand').catch(() => []),
+        brandService.getByType('restaurant').catch(() => []),
+        brandService.getByType('grocery').catch(() => []),
       ]);
-      if (restaurantsRes?.data) {
-        const allRestaurants = restaurantsRes.data.map(mapApiRestaurantToUi);
-        setFeaturedRestaurants(allRestaurants.filter((r) => r.featured));
-        // Near = open restaurants ordered by computed distance (when available).
-        setNearRestaurants(allRestaurants.filter((r) => r.isOpen));
-      }
-      const apiCategories = categoriesRes.categories;
-      if (Array.isArray(apiCategories)) {
-        setCategories(apiCategories.map(mapApiCategoryToUi));
-      }
 
-      const promoRows: ApiPromoCode[] = Array.isArray((promosRes as any)?.data)
-        ? (promosRes as any).data
+      if (resRestaurants?.data) {
+        setRestaurants(resRestaurants.data.map(mapApiRestaurantToUi));
+      }
+      if (Array.isArray(resCategories.categories)) {
+        setCategories(resCategories.categories.map(mapApiCategoryToUi));
+      }
+      const promoRows: ApiPromoCode[] = Array.isArray((resPromos as any)?.data)
+        ? (resPromos as any).data
         : [];
       setPromotions(promoRows.map((p) => ({ banner: mapPromoToBanner(p), promo: p })));
+
+      setShopTypes(resShopTypes);
+      setFreshFinds(resFreshFinds);
+      setGroceryPicks(resGroceryPicks);
+      setOurBrands(resOurBrands);
+      setRestaurantBrands(resRestaurantBrands);
+      setGroceryBrands(resGroceryBrands);
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'Erreur de chargement';
-      setError(errorMsg);
-      console.log('API unavailable, using mock data');
-      setPromotions([]);
+      setError('Erreur lors du chargement des données.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCategoryChange = (categoryId: string) => {
-    const normalized = categoryId === 'restaurants' ? 'restaurant' : categoryId;
-    const apiTab = appTabs.find((t) => t.slug === normalized);
-
-    if (apiTab?.is_home_tab || normalized === 'restaurant') {
-      setActiveCategory(normalized);
-      return;
-    }
-
-    const label =
-      apiTab?.name || switcherTabs.find((t) => t.id === normalized)?.name || normalized;
-
-    navigation.navigate('StoreList', {
-      storeType: normalized,
-      title: label,
-    });
-  };
+  // ── Brand row renderer ──
+  const renderBrandRow = (brands: Brand[]) => (
+    <FlatList
+      horizontal
+      data={brands}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={({ item }) => (
+        <TouchableOpacity 
+          style={styles.brandContainer}
+          onPress={() => navigation.navigate('StoreList', { title: item.name, filter: { brand: item.name } })}
+        >
+          <View style={styles.brandCircle}>
+            <Image
+              source={{ uri: item.logo || 'https://via.placeholder.com/100' }}
+              style={styles.brandLogo}
+              resizeMode="contain"
+            />
+          </View>
+          <Text style={styles.brandName}>{item.name}</Text>
+        </TouchableOpacity>
+      )}
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.horizontalList}
+    />
+  );
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
+      <StatusBar barStyle="light-content" backgroundColor="#000000" />
 
       {loading && (
         <View style={styles.loadingContainer}>
@@ -253,191 +274,323 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-      {/* Header */}
+      {/* ═══ HEADER ═══ */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.location} onPress={() => navigation.navigate('SavedPlaces')}>
-          <Ionicons name="location" size={20} color={COLORS.primary} />
+        <TouchableOpacity
+          style={styles.location}
+          onPress={() => navigation.navigate('SavedPlaces')}
+        >
+          <View style={styles.locationIconWrapper}>
+            <Ionicons name="location-outline" size={18} color="#a0a0a0" />
+          </View>
           <View style={styles.locationText}>
-            <Text style={styles.deliveryLabel}>
-              {deliveryType === 'delivery' ? 'Livraison à' : 'Récupération à'}
+            <Text style={styles.address} numberOfLines={1}>
+              {currentLocation}
             </Text>
-            <View style={styles.addressRow}>
-              <Text style={styles.address} numberOfLines={1}>{currentLocation}</Text>
-              <Ionicons name="chevron-down" size={16} color={COLORS.primary} />
-            </View>
+            <Text style={styles.deliveryLabel}>Localisation</Text>
           </View>
         </TouchableOpacity>
+
         <View style={styles.headerActions}>
           <CartBadge
             variant="pill"
             count={cartCount}
             onPress={() => navigation.navigate('Cart')}
           />
-          <View style={styles.headerDivider} />
-          <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('Profile')}>
-            <Image source={{ uri: avatarUri }} style={styles.headerAvatar} />
+          <TouchableOpacity style={styles.circleBtn}>
+            <Ionicons name="options-outline" size={20} color="#ffffff" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.circleBtn}
+            onPress={() => navigation.navigate('MapView', { category: 'restaurant' })}
+          >
+            <Ionicons name="map-outline" size={20} color={COLORS.primary} />
           </TouchableOpacity>
         </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* Delivery Type Selector */}
-        <DeliveryTypeSelector type={deliveryType} onChange={setDeliveryType} />
-
-        {/* Category Switcher */}
-        <CategorySwitcher
-          tabs={switcherTabs}
-          activeCategory={activeCategory}
-          onChange={setActiveCategory}
-          onPress={handleCategoryChange}
-        />
-
-        {/* Search Bar */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* ═══ 1. BARRE DE RECHERCHE ═══ */}
         <TouchableOpacity
           style={styles.searchBar}
           onPress={() => navigation.navigate('Search')}
           activeOpacity={0.9}
         >
-          <Ionicons name="search" size={20} color={COLORS.textSecondary} />
-          <Text style={styles.searchPlaceholder}>Restaurants, plats, cuisines...</Text>
-          <View style={styles.filterButton}>
-            <Ionicons name="options-outline" size={20} color={COLORS.primary} />
-          </View>
+          <Ionicons name="search" size={20} color="#a0a0a0" />
+          <Text style={styles.searchPlaceholder}>
+            Rechercher des restaurants, plats...
+          </Text>
         </TouchableOpacity>
 
-        {/* Deals Button */}
-        <TouchableOpacity
-          style={styles.dealsButton}
-          onPress={() => navigation.navigate('Deals')}
-        >
-          <View style={styles.dealsIconContainer}>
-            <Ionicons name="pricetag-outline" size={24} color={COLORS.primary} />
+        {/* ═══ 2. SLIDER PROMOS ═══ */}
+        {promotions.length > 0 && (
+          <View style={styles.heroSection}>
+            <FlatList
+              horizontal
+              data={promotions}
+              keyExtractor={(item) => item.promo.code}
+              renderItem={({ item }) => (
+                <PromoBanner
+                  promotion={item.banner}
+                  onPress={() =>
+                    navigation.navigate('PromoDetail', { promo: item.promo })
+                  }
+                />
+              )}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.heroPromoList}
+              pagingEnabled
+              snapToInterval={SCREEN_WIDTH}
+              decelerationRate="fast"
+            />
           </View>
-          <View style={styles.dealsInfo}>
-            <Text style={styles.dealsTitle}>Offres & Promotions</Text>
-            <Text style={styles.dealsSubtitle}>Découvrez nos meilleures offres</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
-        </TouchableOpacity>
+        )}
+        {/* ═══ BANNIÈRE PUBLICITAIRE (Auto-scroll) ═══ */}
+        <View style={styles.adSection}>
+          <FlatList
+            ref={adBannerRef}
+            horizontal
+            data={AD_BANNERS}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[styles.adBanner, { backgroundColor: item.color }]}
+                activeOpacity={0.9}
+              >
+                <Image
+                  source={{ uri: item.image }}
+                  style={styles.adBannerImage}
+                  resizeMode="cover"
+                />
+                <View style={styles.adBannerOverlay} />
+                <View style={styles.adBannerContent}>
+                  <Text style={styles.adBannerTitle}>{item.title}</Text>
+                  <Text style={styles.adBannerSubtitle}>{item.subtitle}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+            showsHorizontalScrollIndicator={false}
+            pagingEnabled
+            snapToInterval={SCREEN_WIDTH - SPACING.md * 2}
+            snapToAlignment="center"
+            decelerationRate="fast"
+            contentContainerStyle={{ paddingHorizontal: SPACING.md }}
+            onScrollToIndexFailed={() => {}}
+          />
+        </View>
 
-        {/* CFoodPass Promo */}
-        {hasCFoodPass ? (
-          <TouchableOpacity
-            style={styles.dashPassBadge}
-            onPress={() => navigation.navigate('DashPass')}
-          >
-            <View style={styles.dashPassContent}>
-              <Ionicons name="checkmark-circle" size={20} color={COLORS.background} />
-              <Text style={styles.dashPassText}>CFoodPass Actif</Text>
-            </View>
-            <Text style={styles.dashPassSubtext}>Livraison gratuite incluse</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={styles.dashPassPromo}
-            onPress={() => navigation.navigate('DashPass')}
-          >
-            <View style={styles.dashPassPromoLeft}>
-              <Ionicons name="flash" size={20} color={COLORS.background} />
-              <View>
-                <Text style={styles.dashPassPromoTitle}>Essai CFoodPass Gratuit</Text>
-                <Text style={styles.dashPassPromoSubtitle}>Livraison gratuite sur toutes les commandes</Text>
-              </View>
-            </View>
-            <Text style={styles.dashPassPromoButton}>S'abonner</Text>
-          </TouchableOpacity>
+        {/* ═══ 3. POPULAIRE EN CE MOMENT ═══ */}
+        {restaurants.filter((r) => r.featured).length > 0 && (
+          <View style={styles.section}>
+            <SectionHeader
+              title="Populaire en ce moment"
+              onSeeAllPress={() => navigation.navigate('StoreList', { title: 'Populaire en ce moment', filter: { featured: true } })}
+            />
+            <FlatList
+              horizontal
+              data={restaurants.filter((r) => r.featured)}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <EnategaRestaurantCard
+                  restaurant={item}
+                  onPress={() =>
+                    navigation.navigate('Restaurant', { restaurant: item })
+                  }
+                  width={300}
+                />
+              )}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalList}
+            />
+          </View>
         )}
 
-        {/* Map View Toggle */}
-        <TouchableOpacity
-          style={styles.mapToggle}
-          onPress={() => navigation.navigate('MapView', { category: activeCategory })}
-        >
-          <Ionicons name="map-outline" size={20} color={COLORS.primary} />
-          <Text style={styles.mapToggleText}>Voir sur la carte</Text>
-        </TouchableOpacity>
 
-        {/* Promotions */}
-        <View style={styles.section}>
-          <FlatList
-            horizontal
-            data={promotions}
-            keyExtractor={(item) => item.promo.code}
-            renderItem={({ item }) => (
-              <PromoBanner
-                promotion={item.banner}
-                onPress={() => navigation.navigate('PromoDetail', { promo: item.promo })}
-              />
-            )}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.promoList}
-            snapToInterval={350}
-            decelerationRate="fast"
-          />
-        </View>
-
-        {/* Categories */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Cuisines & styles</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-              <Text style={styles.seeAll}>Voir tout</Text>
-            </TouchableOpacity>
+        {/* ═══ 4. CATÉGORIES (Shop Types) ═══ */}
+        {shopTypes.length > 0 && (
+          <View style={styles.section}>
+            <SectionHeader
+              title="Catégories"
+              subtitle="Parcourir les boutiques"
+              onSeeAllPress={() => navigation.navigate('GenericGrid', { title: 'Catégories', type: 'shop_type', data: shopTypes })}
+            />
+            <FlatList
+              horizontal
+              data={shopTypes}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <ShopTypeCard
+                  name={item.name}
+                  image={item.image || ''}
+                  onPress={() => navigation.navigate('StoreList', { title: item.name, filter: { category: item.name } })}
+                />
+              )}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalList}
+            />
           </View>
-          <FlatList
-            horizontal
-            data={categories}
-            keyExtractor={item => item.id}
-            renderItem={({ item }) => (
-              <CategoryItem
-                category={item}
-                onPress={() => navigation.navigate('CategoryDetail', { category: item.name })}
-              />
-            )}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryList}
-          />
-        </View>
+        )}
 
-        {/* Featured Restaurants */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>En vedette</Text>
-          <FlatList
-            horizontal
-            data={featuredRestaurants}
-            keyExtractor={item => item.id}
-            renderItem={({ item }) => (
-              <RestaurantCard restaurant={item} onPress={() => navigation.navigate('Restaurant', { restaurant: item })} />
-            )}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.restaurantList}
-          />
-        </View>
+        {/* ═══ 5. J'AI ENVIE DE MANGER (Cuisines) ═══ */}
+        {categories.length > 0 && (
+          <View style={styles.section}>
+            <SectionHeader
+              title="J'ai envie de manger"
+              onSeeAllPress={() => navigation.navigate('GenericGrid', { title: 'Cuisines', type: 'category', data: categories })}
+            />
+            <FlatList
+              horizontal
+              data={categories}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <CategoryItem
+                  isDark
+                  category={item}
+                  onPress={() =>
+                    navigation.navigate('CategoryDetail', { category: item.name })
+                  }
+                />
+              )}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalList}
+            />
+          </View>
+        )}
 
-        {/* Nearby Restaurants */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Près de chez vous</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-              <Text style={styles.seeAll}>Voir tout</Text>
-            </TouchableOpacity>
+        {/* ═══ 6. RESTAURANTS PRÈS DE CHEZ VOUS (carrousel horizontal) ═══ */}
+        {restaurants.filter((r) => r.isOpen).length > 0 && (
+          <View style={styles.section}>
+            <SectionHeader
+              title="Restaurants près de chez vous"
+              subtitle="Ouverts maintenant"
+              onSeeAllPress={() => navigation.navigate('StoreList', { title: 'Près de chez vous', filter: { nearby: true } })}
+            />
+            <FlatList
+              horizontal
+              data={restaurants.filter((r) => r.isOpen)}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <EnategaRestaurantCard
+                  restaurant={item}
+                  onPress={() =>
+                    navigation.navigate('Restaurant', { restaurant: item })
+                  }
+                  width={300}
+                />
+              )}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalList}
+            />
           </View>
-          <View style={styles.nearbyList}>
-            {nearRestaurants.map((restaurant) => (
-              <RestaurantCard
-                key={restaurant.id}
-                restaurant={restaurant}
-                variant="list"
-                onPress={() => navigation.navigate('Restaurant', { restaurant })}
-              />
-            ))}
+        )}
+
+        {/* ═══ 7. TROUVAILLES FRAÎCHES (Fresh Finds Await) ═══ */}
+        {freshFinds.length > 0 && (
+          <View style={styles.section}>
+            <SectionHeader
+              title="Trouvailles fraîches"
+              subtitle="Des produits frais vous attendent"
+              onSeeAllPress={() => navigation.navigate('GenericGrid', { title: 'Trouvailles fraîches', type: 'shop_type', data: freshFinds })}
+            />
+            <FlatList
+              horizontal
+              data={freshFinds}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <ShopTypeCard
+                  name={item.name}
+                  image={item.image || ''}
+                  onPress={() => navigation.navigate('StoreList', { title: item.name, filter: { category: item.name } })}
+                />
+              )}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalList}
+            />
           </View>
-        </View>
+        )}
+
+        {/* ═══ 8. TOP ÉPICERIE (Top Grocery Picks) ═══ */}
+        {groceryPicks.length > 0 && (
+          <View style={styles.section}>
+            <SectionHeader
+              title="Top épicerie"
+              subtitle="Les meilleurs produits"
+              onSeeAllPress={() => navigation.navigate('GenericGrid', { title: 'Top épicerie', type: 'shop_type', data: groceryPicks })}
+            />
+            <FlatList
+              horizontal
+              data={groceryPicks}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <ShopTypeCard
+                  name={item.name}
+                  image={item.image || ''}
+                  onPress={() => navigation.navigate('StoreList', { title: item.name, filter: { category: item.name } })}
+                />
+              )}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalList}
+            />
+          </View>
+        )}
+
+        {/* ═══ 9. NOS MARQUES (Our Brands) ═══ */}
+        {ourBrands.length > 0 && (
+          <View style={styles.section}>
+            <SectionHeader title="Nos marques" onSeeAllPress={() => navigation.navigate('GenericGrid', { title: 'Nos marques', type: 'brand', data: ourBrands })} />
+            {renderBrandRow(ourBrands)}
+          </View>
+        )}
+
+        {/* ═══ 10. GRANDES MARQUES RESTAURANTS ═══ */}
+        {restaurantBrands.length > 0 && (
+          <View style={styles.section}>
+            <SectionHeader
+              title="Grandes marques restaurants"
+              onSeeAllPress={() => navigation.navigate('GenericGrid', { title: 'Grandes marques restaurants', type: 'brand', data: restaurantBrands })}
+            />
+            {renderBrandRow(restaurantBrands)}
+          </View>
+        )}
+
+        {/* ═══ 11. MARQUES ÉPICERIE (Grocery Brands) ═══ */}
+        {groceryBrands.length > 0 && (
+          <View style={styles.section}>
+            <SectionHeader
+              title="Marques épicerie"
+              onSeeAllPress={() => navigation.navigate('GenericGrid', { title: 'Marques épicerie', type: 'brand', data: groceryBrands })}
+            />
+            {renderBrandRow(groceryBrands)}
+          </View>
+        )}
+
+        {/* ═══ 12. TOUS LES RESTAURANTS ═══ */}
+        {restaurants.length > 0 && (
+          <View style={styles.section}>
+            <SectionHeader
+              title="Tous les restaurants"
+              subtitle="Les plus commandés"
+              onSeeAllPress={() => navigation.navigate('StoreList', { title: 'Tous les restaurants' })}
+            />
+            <View style={styles.verticalList}>
+              {restaurants.map((restaurant) => (
+                <EnategaRestaurantCard
+                  key={restaurant.id}
+                  restaurant={restaurant}
+                  onPress={() =>
+                    navigation.navigate('Restaurant', { restaurant })
+                  }
+                  width={SCREEN_WIDTH - SPACING.md * 2}
+                />
+              ))}
+            </View>
+          </View>
+        )}
       </ScrollView>
 
-      {/* Bottom Cart Bar */}
       <BottomCartBar
         count={cartCount}
         total={cartTotal}
@@ -450,197 +603,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    gap: SPACING.md,
-  },
-  location: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    minWidth: 0,
-    paddingRight: SPACING.xs,
-  },
-  locationText: {
-    marginLeft: SPACING.sm,
-    flex: 1,
-    minWidth: 0,
-  },
-  deliveryLabel: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.textSecondary,
-  },
-  addressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  address: {
-    flex: 1,
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginRight: SPACING.xs,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexShrink: 0,
-    gap: SPACING.sm,
-    paddingLeft: SPACING.xs,
-  },
-  headerDivider: {
-    width: 1,
-    height: 28,
-    backgroundColor: COLORS.borderLight,
-  },
-  profileButton: {
-    padding: 2,
-  },
-  headerAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 20,
-    backgroundColor: COLORS.backgroundSecondary,
-    borderWidth: 1,
-    borderColor: COLORS.borderLight,
-  },
-  scrollContent: {
-    paddingBottom: 100,
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: BORDER_RADIUS.md,
-    marginHorizontal: SPACING.md,
-    marginVertical: SPACING.md,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.md,
-    ...SHADOWS.sm,
-  },
-  searchPlaceholder: {
-    flex: 1,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textLight,
-    marginLeft: SPACING.sm,
-  },
-  filterButton: {
-    backgroundColor: COLORS.background,
-    borderRadius: BORDER_RADIUS.sm,
-    padding: SPACING.xs,
-  },
-  dealsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-    marginHorizontal: SPACING.md,
-    marginBottom: SPACING.md,
-    padding: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.borderLight,
-  },
-  dealsIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: BORDER_RADIUS.sm,
-    backgroundColor: COLORS.primary + '15',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: SPACING.md,
-  },
-  dealsInfo: {
-    flex: 1,
-  },
-  dealsTitle: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  dealsSubtitle: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  dashPassBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: COLORS.success + '20',
-    marginHorizontal: SPACING.md,
-    marginBottom: SPACING.md,
-    padding: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
-  },
-  dashPassContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
-  dashPassText: {
-    color: COLORS.success,
-    fontSize: FONT_SIZES.md,
-    fontWeight: '700',
-  },
-  dashPassSubtext: {
-    color: COLORS.success,
-    fontSize: FONT_SIZES.sm,
-  },
-  dashPassPromo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: COLORS.primary,
-    marginHorizontal: SPACING.md,
-    marginBottom: SPACING.md,
-    padding: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
-  },
-  dashPassPromoLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: SPACING.sm,
-  },
-  dashPassPromoTitle: {
-    color: COLORS.background,
-    fontSize: FONT_SIZES.md,
-    fontWeight: '700',
-  },
-  dashPassPromoSubtitle: {
-    color: COLORS.background,
-    fontSize: FONT_SIZES.xs,
-    marginTop: 2,
-  },
-  dashPassPromoButton: {
-    color: COLORS.primary,
-    backgroundColor: COLORS.background,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.sm,
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '700',
-  },
-  mapToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.backgroundSecondary,
-    marginHorizontal: SPACING.md,
-    marginBottom: SPACING.md,
-    padding: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
-    gap: SPACING.sm,
-  },
-  mapToggleText: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.primary,
+    backgroundColor: '#000000',
   },
   loadingContainer: {
     position: 'absolute',
@@ -650,47 +613,144 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.8)',
+    backgroundColor: 'rgba(0,0,0,0.8)',
     zIndex: 999,
   },
-  errorText: {
-    color: COLORS.error,
-    fontSize: FONT_SIZES.sm,
-    textAlign: 'center',
-    padding: SPACING.md,
-  },
-  section: {
-    marginTop: SPACING.lg,
-  },
-  sectionHeader: {
+  header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: SPACING.md,
-    marginBottom: SPACING.md,
+    paddingVertical: SPACING.md,
+    justifyContent: 'space-between',
   },
-  sectionTitle: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: '700',
-    color: COLORS.text,
-    paddingHorizontal: SPACING.md,
-    marginBottom: SPACING.md,
+  location: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
-  seeAll: {
+  locationIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  locationText: {
+    marginLeft: SPACING.sm,
+    flex: 1,
+  },
+  address: {
+    color: '#ffffff',
     fontSize: FONT_SIZES.md,
-    color: COLORS.primary,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
-  promoList: {
-    paddingHorizontal: SPACING.sm,
+  deliveryLabel: {
+    color: '#a0a0a0',
+    fontSize: FONT_SIZES.xs,
   },
-  categoryList: {
-    paddingHorizontal: SPACING.sm,
+  headerActions: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
   },
-  restaurantList: {
-    paddingHorizontal: SPACING.sm,
+  circleBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#1c1c1e',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  nearbyList: {
+  scrollContent: {
+    paddingBottom: 100,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1c1c1e',
+    borderRadius: BORDER_RADIUS.md,
+    marginHorizontal: SPACING.md,
+    marginBottom: SPACING.md,
     paddingHorizontal: SPACING.md,
+    paddingVertical: 12,
+  },
+  searchPlaceholder: {
+    flex: 1,
+    fontSize: FONT_SIZES.md,
+    color: '#a0a0a0',
+    marginLeft: SPACING.sm,
+  },
+  heroSection: {
+    marginBottom: SPACING.md,
+  },
+  heroPromoList: {
+    paddingHorizontal: 0,
+  },
+  section: {
+    marginBottom: SPACING.xl,
+  },
+  adSection: {
+    marginBottom: SPACING.xl,
+  },
+  adBanner: {
+    width: SCREEN_WIDTH - SPACING.md * 2,
+    height: 140,
+    borderRadius: BORDER_RADIUS.lg,
+    overflow: 'hidden',
+    marginRight: SPACING.md,
+    position: 'relative',
+  },
+  adBannerImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+  },
+  adBannerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  adBannerContent: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    padding: SPACING.md,
+  },
+  adBannerTitle: {
+    color: '#ffffff',
+    fontSize: FONT_SIZES.xl,
+    fontWeight: 'bold',
+  },
+  adBannerSubtitle: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: FONT_SIZES.sm,
+    marginTop: 4,
+  },
+  horizontalList: {
+    paddingHorizontal: SPACING.md,
+  },
+  verticalList: {
+    paddingHorizontal: SPACING.md,
+  },
+  brandContainer: {
+    alignItems: 'center',
+    marginRight: SPACING.lg,
+  },
+  brandCircle: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  brandLogo: {
+    width: '80%',
+    height: '80%',
+  },
+  brandName: {
+    color: '#ffffff',
+    fontSize: FONT_SIZES.sm,
+    fontWeight: '500',
   },
 });

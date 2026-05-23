@@ -220,6 +220,7 @@ export default function CheckoutScreen() {
   };
 
   useEffect(() => {
+    if (!items || items.length === 0) return;
     (async () => {
       try {
         const q = await quoteService.quote({
@@ -255,7 +256,7 @@ export default function CheckoutScreen() {
                 {deliveryType === 'delivery' ? 'Livraison' : 'À emporter'}
               </Text>
             </View>
-            <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Main')}>
               <Text style={styles.modeChange}>Changer</Text>
             </TouchableOpacity>
           </View>
@@ -434,10 +435,10 @@ export default function CheckoutScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+  container: { flex: 1, backgroundColor: '#000000' },
   section: { padding: SPACING.md },
-  sectionTitle: { fontSize: FONT_SIZES.lg, fontWeight: '600', color: COLORS.text, marginBottom: SPACING.sm },
-  sectionSubtitle: { fontSize: FONT_SIZES.sm, color: COLORS.textSecondary, marginBottom: SPACING.md },
+  sectionTitle: { fontSize: FONT_SIZES.lg, fontWeight: '600', color: '#ffffff', marginBottom: SPACING.sm },
+  sectionSubtitle: { fontSize: FONT_SIZES.sm, color: '#8e8e93', marginBottom: SPACING.md },
   modeRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -448,75 +449,76 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.xs,
-    backgroundColor: COLORS.backgroundSecondary,
+    backgroundColor: '#1c1c1e',
     borderRadius: BORDER_RADIUS.round,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.xs,
   },
-  modeText: { fontSize: FONT_SIZES.sm, fontWeight: '700', color: COLORS.text },
+  modeText: { fontSize: FONT_SIZES.sm, fontWeight: '700', color: '#ffffff' },
   modeChange: { fontSize: FONT_SIZES.sm, fontWeight: '700', color: COLORS.primary },
   pickupCard: {
     flexDirection: 'row',
     gap: SPACING.sm,
-    backgroundColor: COLORS.backgroundSecondary,
+    backgroundColor: '#1c1c1e',
     borderRadius: BORDER_RADIUS.md,
     padding: SPACING.md,
     alignItems: 'center',
   },
-  pickupText: { flex: 1, fontSize: FONT_SIZES.md, color: COLORS.textSecondary },
+  pickupText: { flex: 1, fontSize: FONT_SIZES.md, color: '#8e8e93' },
   addressCard: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.card,
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#1c1c1e',
     padding: SPACING.md, borderRadius: BORDER_RADIUS.md, gap: SPACING.md, ...SHADOWS,
+    borderWidth: 1, borderColor: '#2c2c2e',
   },
   addressIcon: {
     width: 44, height: 44, borderRadius: 22,
     backgroundColor: COLORS.primary + '15%', justifyContent: 'center', alignItems: 'center',
   },
   addressInfo: { flex: 1 },
-  addressLabel: { fontSize: FONT_SIZES.md, fontWeight: '600', color: COLORS.text },
-  addressText: { fontSize: FONT_SIZES.sm, color: COLORS.textSecondary, marginTop: 2 },
+  addressLabel: { fontSize: FONT_SIZES.md, fontWeight: '600', color: '#ffffff' },
+  addressText: { fontSize: FONT_SIZES.sm, color: '#8e8e93', marginTop: 2 },
   instructionsInput: {
-    backgroundColor: COLORS.backgroundSecondary, borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md, fontSize: FONT_SIZES.md, color: COLORS.text, minHeight: 80,
+    backgroundColor: '#1c1c1e', borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.md, fontSize: FONT_SIZES.md, color: '#ffffff', minHeight: 80,
   },
   paymentOption: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.card,
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#1c1c1e',
     padding: SPACING.md, borderRadius: BORDER_RADIUS.md, marginBottom: SPACING.sm,
-    gap: SPACING.md, borderWidth: 2, borderColor: 'transparent',
+    gap: SPACING.md, borderWidth: 1, borderColor: '#2c2c2e',
   },
   paymentOptionSelected: { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '05' },
   paymentIcon: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
-  paymentName: { flex: 1, fontSize: FONT_SIZES.md, fontWeight: '500', color: COLORS.text },
+  paymentName: { flex: 1, fontSize: FONT_SIZES.md, fontWeight: '500', color: '#ffffff' },
   tipOptions: { flexDirection: 'row', marginVertical: SPACING.sm },
   tipOption: {
     paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.round, backgroundColor: COLORS.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.round, backgroundColor: '#1c1c1e',
     marginRight: SPACING.sm,
   },
   tipOptionSelected: { backgroundColor: COLORS.primary },
-  tipText: { fontSize: FONT_SIZES.md, fontWeight: '500', color: COLORS.text },
+  tipText: { fontSize: FONT_SIZES.md, fontWeight: '500', color: '#ffffff' },
   tipTextSelected: { color: '#FFF' },
   promoContainer: { flexDirection: 'row', gap: SPACING.sm },
   promoInput: {
-    flex: 1, backgroundColor: COLORS.backgroundSecondary, borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md, fontSize: FONT_SIZES.md, color: COLORS.text,
+    flex: 1, backgroundColor: '#1c1c1e', borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.md, fontSize: FONT_SIZES.md, color: '#ffffff',
   },
   promoButton: { backgroundColor: COLORS.primary, paddingHorizontal: SPACING.lg, borderRadius: BORDER_RADIUS.sm },
   promoButtonText: { color: '#FFF', fontSize: FONT_SIZES.sm, fontWeight: '600' },
   summary: {
-    backgroundColor: COLORS.card, margin: SPACING.md, padding: SPACING.md,
-    borderRadius: BORDER_RADIUS.md, ...SHADOWS,
+    backgroundColor: '#1c1c1e', margin: SPACING.md, padding: SPACING.md,
+    borderRadius: BORDER_RADIUS.md, ...SHADOWS, borderWidth: 1, borderColor: '#2c2c2e',
   },
-  summaryTitle: { fontSize: FONT_SIZES.lg, fontWeight: '600', color: COLORS.text, marginBottom: SPACING.md },
+  summaryTitle: { fontSize: FONT_SIZES.lg, fontWeight: '600', color: '#ffffff', marginBottom: SPACING.md },
   summaryRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: SPACING.sm },
-  summaryLabel: { fontSize: FONT_SIZES.md, color: COLORS.textSecondary },
-  summaryValue: { fontSize: FONT_SIZES.md, fontWeight: '500', color: COLORS.text },
-  divider: { height: 1, backgroundColor: COLORS.border, marginVertical: SPACING.sm },
-  totalLabel: { fontSize: FONT_SIZES.lg, fontWeight: '600', color: COLORS.text },
-  totalValue: { fontSize: FONT_SIZES.xl, fontWeight: '700', color: COLORS.text },
+  summaryLabel: { fontSize: FONT_SIZES.md, color: '#8e8e93' },
+  summaryValue: { fontSize: FONT_SIZES.md, fontWeight: '500', color: '#ffffff' },
+  divider: { height: 1, backgroundColor: '#2c2c2e', marginVertical: SPACING.sm },
+  totalLabel: { fontSize: FONT_SIZES.lg, fontWeight: '600', color: '#ffffff' },
+  totalValue: { fontSize: FONT_SIZES.xl, fontWeight: '700', color: '#ffffff' },
   bottomBar: {
     padding: SPACING.md, paddingBottom: SPACING.lg,
-    backgroundColor: COLORS.background, borderTopWidth: 1, borderTopColor: COLORS.borderLight,
+    backgroundColor: '#000000', borderTopWidth: 1, borderTopColor: '#1c1c1e',
   },
   orderButton: {
     backgroundColor: COLORS.primary, paddingVertical: SPACING.md,

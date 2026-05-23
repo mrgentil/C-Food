@@ -17,7 +17,21 @@ export type RootStackParamList = {
   AdminUsers: undefined;
   AdminRestaurants: undefined;
   Restaurant: { restaurant: Restaurant };
-  StoreList: { storeType: string; title: string };
+  StoreList: { 
+    title: string; 
+    filter?: { 
+      type?: string; 
+      category?: string; 
+      brand?: string; 
+      featured?: boolean; 
+      nearby?: boolean; 
+    } 
+  };
+  GenericGrid: { 
+    title: string; 
+    type: 'shop_type' | 'category' | 'brand'; 
+    data: any[]; 
+  };
   Grocery: undefined;
   GroceryDetail: { store: Store };
   Alcohol: undefined;

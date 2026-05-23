@@ -45,6 +45,7 @@ export function mapDriverOrder(o, driverId = null) {
     paidAtLabel: ps.paid_at_label ?? null,
     transactionId: ps.transaction_id ?? null,
     deliveryPhotoURL: o.delivery_photo_url ?? null,
+    deliveryInstructions: o.delivery_instructions ?? null,
     createdAt: o.created_at,
     deliveredAt: o.delivered_at,
     cancelledAt: o.cancelled_at,

@@ -157,7 +157,7 @@ export default function RestaurantScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#000000',
   },
   heroContainer: {
     height: 220,
@@ -169,13 +169,15 @@ const styles = StyleSheet.create({
   },
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   infoCard: {
-    backgroundColor: COLORS.card,
+    backgroundColor: '#1c1c1e',
     margin: SPACING.md,
     padding: SPACING.md,
     borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    borderColor: '#2c2c2e',
     ...SHADOWS,
   },
   infoRow: {
@@ -190,7 +192,7 @@ const styles = StyleSheet.create({
   rating: {
     fontSize: FONT_SIZES.xl,
     fontWeight: '700',
-    color: COLORS.text,
+    color: '#ffffff',
   },
   reviews: {
     fontSize: FONT_SIZES.xs,
@@ -199,12 +201,12 @@ const styles = StyleSheet.create({
   infoDivider: {
     width: 1,
     height: 30,
-    backgroundColor: COLORS.border,
+    backgroundColor: '#2c2c2e',
   },
   deliveryTime: {
     fontSize: FONT_SIZES.md,
     fontWeight: '600',
-    color: COLORS.text,
+    color: '#ffffff',
   },
   distance: {
     fontSize: FONT_SIZES.md,
@@ -217,14 +219,14 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   tag: {
-    backgroundColor: COLORS.backgroundSecondary,
+    backgroundColor: '#2c2c2e',
     paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.xs,
     borderRadius: BORDER_RADIUS.sm,
   },
   tagText: {
     fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
+    color: '#ffffff',
   },
   discountBadge: {
     flexDirection: 'row',
@@ -243,7 +245,7 @@ const styles = StyleSheet.create({
   tabs: {
     paddingHorizontal: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderLight,
+    borderBottomColor: '#2c2c2e',
   },
   tab: {
     paddingHorizontal: SPACING.md,

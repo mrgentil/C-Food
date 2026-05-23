@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -24,31 +24,31 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const ONBOARDING_DATA = [
   {
     id: 1,
-    title: 'Livraison rapide à Kinshasa',
-    description: 'Commandez et recevez vos plats préférés en moins de 30 minutes',
-    icon: 'bicycle-outline',
+    title: 'Toutes vos envies en RDC',
+    description: 'Bien plus que des repas. Nous livrons tout ce dont vous avez besoin, où que vous soyez au Congo.',
+    icon: 'rocket-outline',
     color: COLORS.primary,
   },
   {
     id: 2,
     title: 'Restaurants, Épicerie & Plus',
-    description: 'Des milliers de restaurants, épiceries, pharmacies et plus encore',
-    icon: 'restaurant-outline',
-    color: '#00A650',
+    description: 'Des milliers de restaurants, supermarchés, pharmacies et boutiques officielles à portée de main.',
+    icon: 'storefront-outline',
+    color: '#34C759', // Premium iOS green
   },
   {
     id: 3,
-    title: 'Paiement sécurisé',
-    description: 'Payez avec M-Pesa, Airtel Money, Orange Money ou en liquide',
-    icon: 'card-outline',
-    color: '#FF6B00',
+    title: 'Paiement 100% sécurisé',
+    description: 'Payez en toute sérénité avec M-Pesa, Airtel Money, Orange Money ou en espèces à la livraison.',
+    icon: 'shield-checkmark-outline',
+    color: '#FF9500', // Premium iOS orange
   },
   {
     id: 4,
     title: 'Suivi en temps réel',
-    description: 'Suivez votre livraison en direct sur la carte',
+    description: 'Ne perdez jamais votre commande de vue grâce à notre suivi GPS en direct de la cuisine à votre porte.',
     icon: 'map-outline',
-    color: COLORS.info,
+    color: '#AF52DE', // Premium iOS purple
   },
 ];
 
@@ -56,6 +56,7 @@ export default function OnboardingScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [location, setLocation] = useState<string>('');
+  const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
     getLocation();
@@ -88,9 +89,15 @@ export default function OnboardingScreen() {
     navigation.replace('Auth');
   };
 
+  const handleNext = () => {
+    if (currentIndex < ONBOARDING_DATA.length - 1) {
+      flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
+    }
+  };
+
   const renderItem = ({ item, index }: { item: typeof ONBOARDING_DATA[0]; index: number }) => (
     <View style={[styles.slide, { width }]}>
-      <View style={[styles.iconContainer, { backgroundColor: item.color + '20' }]}>
+      <View style={[styles.iconContainer, { backgroundColor: item.color + '15', borderColor: item.color + '40', borderWidth: 1 }]}>
         <Ionicons name={item.icon as any} size={80} color={item.color} />
       </View>
       <Text style={styles.title}>{item.title}</Text>
@@ -106,18 +113,18 @@ export default function OnboardingScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF" />
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
       <FlatList
+        ref={flatListRef}
         data={ONBOARDING_DATA}
         renderItem={({ item, index }) => renderItem({ item, index })}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onScroll={(e) => {
+        onMomentumScrollEnd={(e) => {
           const index = Math.round(e.nativeEvent.contentOffset.x / width);
           setCurrentIndex(index);
         }}
-        scrollEventThrottle={16}
       />
 
       <View style={styles.footer}>
@@ -132,17 +139,13 @@ export default function OnboardingScreen() {
 
         {currentIndex === ONBOARDING_DATA.length - 1 ? (
           <TouchableOpacity style={styles.getStartedButton} onPress={handleFinish}>
-            <Text style={styles.getStartedText}>Commencer</Text>
-            <Ionicons name="arrow-forward" size={20} color="#FFF" />
+            <Text style={styles.getStartedText}>Commencer l'expérience</Text>
+            <Ionicons name="arrow-forward" size={20} color={COLORS.text} />
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
             style={styles.nextButton}
-            onPress={() => {
-              if (currentIndex < ONBOARDING_DATA.length - 1) {
-                setCurrentIndex(currentIndex + 1);
-              }
-            }}
+            onPress={handleNext}
           >
             <Text style={styles.nextText}>Suivant</Text>
           </TouchableOpacity>
@@ -167,16 +170,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.xxl,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 10,
   },
   title: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: '800',
+    fontSize: 26,
+    fontWeight: '900',
     color: COLORS.text,
     textAlign: 'center',
     marginBottom: SPACING.md,
+    letterSpacing: 0.5,
   },
   description: {
-    fontSize: FONT_SIZES.lg,
+    fontSize: FONT_SIZES.md,
     color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
@@ -184,12 +193,14 @@ const styles = StyleSheet.create({
   locationBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.primary + '15',
+    backgroundColor: COLORS.backgroundSecondary,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
     borderRadius: BORDER_RADIUS.round,
     marginTop: SPACING.xl,
     gap: SPACING.sm,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   locationText: {
     fontSize: FONT_SIZES.sm,
@@ -203,7 +214,7 @@ const styles = StyleSheet.create({
   dots: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.xl,
     gap: SPACING.sm,
   },
   dot: {
@@ -219,11 +230,13 @@ const styles = StyleSheet.create({
   nextButton: {
     alignItems: 'center',
     paddingVertical: SPACING.md,
+    backgroundColor: COLORS.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.md,
   },
   nextText: {
     fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.primary,
+    fontWeight: '700',
+    color: COLORS.text,
   },
   getStartedButton: {
     flexDirection: 'row',
@@ -233,10 +246,15 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     borderRadius: BORDER_RADIUS.md,
     gap: SPACING.sm,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   getStartedText: {
-    color: '#FFF',
+    color: COLORS.text,
     fontSize: FONT_SIZES.lg,
-    fontWeight: '700',
+    fontWeight: '800',
   },
 });

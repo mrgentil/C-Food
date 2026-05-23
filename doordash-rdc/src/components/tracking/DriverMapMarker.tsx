@@ -4,7 +4,7 @@ import { View, Text, Image, StyleSheet, Animated, Easing } from 'react-native';
 import { resolvePhotoUrl } from '../../utils/mediaUrl';
 
 const FALLBACK_AVATAR =
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop';
+  'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=200';
 
 type Props = {
   name: string;

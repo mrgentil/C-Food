@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderLight,
+    borderBottomColor: '#2c2c2e',
   },
   info: {
     flex: 1,
@@ -62,19 +62,19 @@ const styles = StyleSheet.create({
   name: {
     fontSize: FONT_SIZES.lg,
     fontWeight: '600',
-    color: COLORS.text,
+    color: '#ffffff',
     marginBottom: SPACING.xs,
   },
   description: {
     fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
+    color: '#8e8e93',
     marginBottom: SPACING.sm,
     lineHeight: 20,
   },
   price: {
     fontSize: FONT_SIZES.md,
     fontWeight: '600',
-    color: COLORS.text,
+    color: '#ffffff',
   },
   imageContainer: {
     width: 120,
@@ -87,18 +87,20 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.md,
   },
   placeholder: {
-    backgroundColor: COLORS.backgroundSecondary,
+    backgroundColor: '#2c2c2e',
   },
   addButton: {
     position: 'absolute',
     bottom: -5,
     right: -5,
-    backgroundColor: COLORS.card,
+    backgroundColor: '#1c1c1e',
     borderRadius: BORDER_RADIUS.round,
     width: 32,
     height: 32,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#2c2c2e',
     ...SHADOWS,
   },
 });

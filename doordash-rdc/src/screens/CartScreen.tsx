@@ -94,7 +94,7 @@ export default function CartScreen() {
           </Text>
           <TouchableOpacity
             style={styles.emptyButton}
-            onPress={() => navigation.navigate('Home')}
+            onPress={() => navigation.navigate('Main')}
           >
             <Text style={styles.emptyButtonText}>Parcourir les restaurants</Text>
           </TouchableOpacity>
@@ -130,7 +130,7 @@ export default function CartScreen() {
                   <Ionicons
                     name={item.quantity === 1 ? 'trash-outline' : 'remove'}
                     size={20}
-                    color={item.quantity === 1 ? COLORS.error : COLORS.text}
+                    color={item.quantity === 1 ? COLORS.error : "#ffffff"}
                   />
                 </TouchableOpacity>
                 <Text style={styles.quantity}>{item.quantity}</Text>
@@ -138,7 +138,7 @@ export default function CartScreen() {
                   style={styles.quantityButton}
                   onPress={() => updateQuantity(item.lineId, item.quantity + 1)}
                 >
-                  <Ionicons name="add" size={20} color={COLORS.text} />
+                  <Ionicons name="add" size={20} color="#ffffff" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -204,7 +204,7 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#000000',
   },
   empty: {
     flex: 1,
@@ -215,13 +215,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: FONT_SIZES.xxl,
     fontWeight: '700',
-    color: COLORS.text,
+    color: '#ffffff',
     marginTop: SPACING.md,
     marginBottom: SPACING.sm,
   },
   emptyText: {
     fontSize: FONT_SIZES.md,
-    color: COLORS.textSecondary,
+    color: '#8e8e93',
     textAlign: 'center',
     marginBottom: SPACING.xl,
   },
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderLight,
+    borderBottomColor: '#2c2c2e',
     gap: SPACING.md,
   },
   itemImage: {
@@ -258,23 +258,23 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: FONT_SIZES.md,
     fontWeight: '600',
-    color: COLORS.text,
+    color: '#ffffff',
     marginBottom: SPACING.xs,
   },
   itemNote: {
     fontSize: FONT_SIZES.xs,
-    color: COLORS.textSecondary,
+    color: '#8e8e93',
     fontStyle: 'italic',
     marginBottom: SPACING.xs,
   },
   itemPrice: {
     fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
+    color: '#8e8e93',
   },
   quantityControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.backgroundSecondary,
+    backgroundColor: '#1c1c1e',
     borderRadius: BORDER_RADIUS.sm,
     padding: SPACING.xs,
     gap: SPACING.sm,
@@ -284,21 +284,21 @@ const styles = StyleSheet.create({
     height: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.card,
+    backgroundColor: '#2c2c2e',
     borderRadius: BORDER_RADIUS.sm,
   },
   removeButton: {
-    backgroundColor: COLORS.error + '15',
+    backgroundColor: COLORS.error + '30',
   },
   quantity: {
     fontSize: FONT_SIZES.md,
     fontWeight: '600',
-    color: COLORS.text,
+    color: '#ffffff',
     minWidth: 24,
     textAlign: 'center',
   },
   summary: {
-    backgroundColor: COLORS.card,
+    backgroundColor: '#1c1c1e',
     margin: SPACING.md,
     padding: SPACING.md,
     borderRadius: BORDER_RADIUS.md,
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
   summaryTitle: {
     fontSize: FONT_SIZES.lg,
     fontWeight: '600',
-    color: COLORS.text,
+    color: '#ffffff',
     marginBottom: SPACING.md,
   },
   summaryRow: {
@@ -317,27 +317,27 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: FONT_SIZES.md,
-    color: COLORS.textSecondary,
+    color: '#8e8e93',
   },
   summaryValue: {
     fontSize: FONT_SIZES.md,
     fontWeight: '500',
-    color: COLORS.text,
+    color: '#ffffff',
   },
   divider: {
     height: 1,
-    backgroundColor: COLORS.border,
+    backgroundColor: '#2c2c2e',
     marginVertical: SPACING.sm,
   },
   totalLabel: {
     fontSize: FONT_SIZES.lg,
     fontWeight: '600',
-    color: COLORS.text,
+    color: '#ffffff',
   },
   totalValue: {
     fontSize: FONT_SIZES.xl,
     fontWeight: '700',
-    color: COLORS.text,
+    color: '#ffffff',
   },
   infoCard: {
     flexDirection: 'row',
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     marginHorizontal: SPACING.md,
     marginBottom: SPACING.md,
     padding: SPACING.md,
-    backgroundColor: COLORS.card,
+    backgroundColor: '#1c1c1e',
     borderRadius: BORDER_RADIUS.md,
     gap: SPACING.md,
     ...SHADOWS,
@@ -356,12 +356,12 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: FONT_SIZES.md,
     fontWeight: '600',
-    color: COLORS.text,
+    color: '#ffffff',
     marginBottom: SPACING.xs,
   },
   infoText: {
     fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
+    color: '#8e8e93',
   },
   changeText: {
     fontSize: FONT_SIZES.sm,

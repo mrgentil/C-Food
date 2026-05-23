@@ -31,14 +31,14 @@ const DELIVERY_FILTERS = [
 export default function StoreListScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteParams>();
-  const { storeType, title } = route.params;
+  const { title, filter } = route.params;
   const { cartCount, cartTotal } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [activeDeliveryFilter, setActiveDeliveryFilter] = useState('all');
   const [activeSubcategory, setActiveSubcategory] = useState('Tous');
 
-  const { loading, error, restaurants } = useStoreRestaurants(storeType);
+  const { loading, error, restaurants } = useStoreRestaurants(filter || { type: 'restaurant' });
 
   const subcategoryOptions = useMemo(() => {
     const set = new Set<string>();
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     marginRight: SPACING.sm,
   },
   subcategoryChipActive: {
-    backgroundColor: COLORS.primary + '18',
+    backgroundColor: COLORS.primary + '30',
     borderWidth: 1,
     borderColor: COLORS.primary,
   },
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.round,
     backgroundColor: COLORS.backgroundSecondary,
   },
-  filterChipActive: { backgroundColor: COLORS.primary + '20' },
+  filterChipActive: { backgroundColor: COLORS.primary + '30', borderWidth: 1, borderColor: COLORS.primary },
   filterText: { fontSize: FONT_SIZES.sm, color: COLORS.textSecondary },
   filterTextActive: { color: COLORS.primary, fontWeight: '600' },
   storeCount: {
@@ -277,6 +277,6 @@ const styles = StyleSheet.create({
   },
   storesList: { paddingHorizontal: SPACING.md, paddingBottom: 100 },
   emptyState: { alignItems: 'center', paddingVertical: SPACING.xl * 2 },
-  emptyTitle: { fontSize: FONT_SIZES.lg, fontWeight: '600', marginTop: SPACING.md },
+  emptyTitle: { fontSize: FONT_SIZES.lg, fontWeight: '600', marginTop: SPACING.md, color: COLORS.text },
   emptySubtitle: { fontSize: FONT_SIZES.sm, color: COLORS.textSecondary, marginTop: SPACING.xs },
 });

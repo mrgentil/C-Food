@@ -30,6 +30,7 @@ export { default as SettingsScreen } from './SettingsScreen';
 export { default as OrderHistoryScreen } from './OrderHistoryScreen';
 export { default as OrderDetailScreen } from './OrderDetailScreen';
 export { default as StoreListScreen } from './StoreListScreen';
+export { default as GenericGridScreen } from './GenericGridScreen';
 export { default as GroceryScreen } from './GroceryScreen';
 export { default as GroceryDetailScreen } from './GroceryDetailScreen';
 export { default as AlcoholScreen } from './AlcoholScreen';
@@ -51,4 +52,3 @@ export { default as NotificationSettingsScreen } from './NotificationSettingsScr
 export { default as LanguageSettingsScreen } from './LanguageSettingsScreen';
 export { default as DeleteAccountScreen } from './DeleteAccountScreen';
 export { default as SplashScreen } from './SplashScreen';
-

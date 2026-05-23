@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\AppTabController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\ShopTypeController;
+use App\Http\Controllers\BrandController;
 use App\Http\Controllers\Api\PromoCodeController;
 use App\Http\Controllers\Api\OrderMessageController;
 use App\Http\Controllers\Api\QuoteController;
@@ -47,6 +49,9 @@ Route::post('/auth/register', [AuthController::class, 'register']);
 Route::get('/app-tabs', [AppTabController::class, 'index']);
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}/restaurants', [CategoryController::class, 'restaurants']);
+
+Route::get('/shop-types', [ShopTypeController::class, 'index']);
+Route::get('/brands', [BrandController::class, 'index']);
 
 Route::get('/restaurants', [RestaurantController::class, 'index']);
 Route::get('/restaurants/featured', [RestaurantController::class, 'featured']);

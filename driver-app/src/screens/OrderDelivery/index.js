@@ -896,6 +896,14 @@ const OrderDelivery = ({ navigation, route }) => {
               <Ionicons name="navigate-circle" size={40} color={colors.primary} />
             </TouchableOpacity>
           </View>
+          {order.deliveryInstructions ? (
+            <View style={[styles.clientRow, { marginTop: 12, backgroundColor: '#FEF3C7', padding: 8, borderRadius: 6 }]}>
+              <Ionicons name="information-circle" size={16} color="#D97706" />
+              <Text style={{ flex: 1, marginLeft: 8, color: '#92400E', fontSize: 13 }}>
+                Instruction client: {order.deliveryInstructions}
+              </Text>
+            </View>
+          ) : null}
         </View>
 
         {/* Preuve de livraison */}

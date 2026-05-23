@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -44,8 +45,7 @@ export default function AuthScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { login, register, isAuthenticated, loading: authLoading } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [name, setName] = useState('');
   const { settings } = useSettings();
   const [loginId, setLoginId] = useState('');
   const [email, setEmail] = useState('');
@@ -118,12 +118,14 @@ export default function AuthScreen() {
       >
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           <View style={styles.logoContainer}>
-            <View style={styles.logo}>
-              <Ionicons name={isDriverApp ? 'bicycle' : 'restaurant'} size={48} color={COLORS.primary} />
-            </View>
+            <Image 
+              source={require('../../assets/logo.png')} 
+              style={styles.logoImage} 
+              resizeMode="contain"
+            />
             <Text style={styles.appName}>C-Food</Text>
             <Text style={styles.tagline}>
-              {isDriverApp ? 'Espace livreur — connexion' : 'Livraison rapide à Kinshasa'}
+              {isDriverApp ? 'Espace livreur — connexion' : 'Bien plus que des repas : toutes vos envies livrées en RDC'}
             </Text>
           </View>
 
@@ -299,14 +301,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.xxl,
   },
-  logo: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    backgroundColor: COLORS.primary + '15',
-    justifyContent: 'center',
-    alignItems: 'center',
+  logoImage: {
+    width: 100,
+    height: 100,
     marginBottom: SPACING.md,
+    borderRadius: 20,
   },
   appName: {
     fontSize: FONT_SIZES.title,
