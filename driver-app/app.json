@@ -1,0 +1,98 @@
+{
+  "expo": {
+    "name": "C-Food Driver",
+    "slug": "CfoodDriver",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B1220"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bfpropertiesrdc.cfood.driver",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "C-FOOD Driver utilise votre position pour afficher les commandes à proximité et guider les livraisons.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "C-FOOD Driver nécessite l'accès à votre position en arrière-plan pour permettre le suivi de la livraison même lorsque l'application n'est pas au premier l'écran.",
+        "NSLocationAlwaysUsageDescription": "C-FOOD Driver nécessite l'accès à votre position en arrière-plan pour permettre le suivi de la livraison.",
+        "NSMicrophoneUsageDescription": "C-FOOD Driver utilise le micro pour les messages vocaux du chat.",
+        "NSCameraUsageDescription": "C-FOOD Driver utilise la caméra pour la photo de preuve de livraison.",
+        "NSPhotoLibraryUsageDescription": "C-FOOD Driver accède à vos photos pour joindre une preuve de livraison.",
+        "UIBackgroundModes": [
+          "location",
+          "fetch",
+          "remote-notification"
+        ]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA"
+      ],
+      "package": "com.bfpropertiesrdc.cfood.driver"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "SUPPORT_PHONE": "+243812380589",
+      "SUPPORT_EMAIL": "chadkabengele@gmail.com",
+      "API_BASE_URL": "http://172.20.10.4:8000/api",
+      "REVERB_APP_KEY": "cfood-local-key",
+      "REVERB_HOST": "172.20.10.4",
+      "REVERB_PORT": 6001,
+      "REVERB_SCHEME": "http",
+      "eas": {
+        "projectId": "18a737a7-7e1a-4267-bd29-d7c421d8546e"
+      }
+    },
+    "plugins": [
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "C-FOOD Driver utilise votre position pour afficher les commandes à proximité et guider les livraisons.",
+          "locationAlwaysAndWhenInUsePermission": "C-FOOD Driver nécessite l'accès à votre position en arrière-plan pour permettre le suivi de la livraison."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "C-FOOD Driver accède à vos photos pour le profil et le chat.",
+          "cameraPermission": "C-FOOD Driver utilise l'appareil photo pour la preuve de livraison et le chat."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "C-FOOD Driver utilise le micro pour les messages vocaux du chat."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#0EA5E9"
+        }
+      ],
+      "expo-task-manager"
+    ]
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "expo": {
+    "name": "C-FOOD",
+    "slug": "c-food",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "C-Food utilise votre position pour afficher votre adresse de livraison et les restaurants à proximité."
+        }
+      ],
+      "expo-font",
+      [
+        "expo-av",
+        {
+          "microphonePermission": "C-Food utilise le micro pour les messages vocaux du chat avec votre livreur."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "C-Food accède à vos photos pour envoyer des images dans le chat.",
+          "cameraPermission": "C-Food utilise l'appareil photo pour le chat et votre profil."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#0EA5E9",
+          "defaultChannel": "default"
+        }
+      ]
+    ],
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bfpropertiesrdc.cfood",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "C-Food utilise votre position pour afficher votre adresse de livraison et les restaurants à proximité.",
+        "NSLocalNetworkUsageDescription": "C-Food utilise le réseau local pour le suivi en direct de votre commande (WebSocket)."
+      }
+    },
+    "android": {
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDBNF48YL1FQFZuMlMSoQKceOeTHItBtmw"
+        }
+      },
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.bfpropertiesrdc.cfood",
+      "usesCleartextTraffic": true,
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "extra": {
+      "APP_VARIANT": "customer",
+      "API_BASE_URL": "http://172.20.10.4:8000/api",
+      "GOOGLE_MAPS_API_KEY": "AIzaSyDBNF48YL1FQFZuMlMSoQKceOeTHItBtmw",
+      "REVERB_APP_KEY": "cfood-local-key",
+      "REVERB_HOST": "172.20.10.4",
+      "REVERB_PORT": 6001,
+      "REVERB_SCHEME": "http",
+      "PUSHER_KEY": "YOUR_PUSHER_KEY_HERE",
+      "PUSHER_CLUSTER": "mt1",
+      "PAYMENT_MODE": "simulation",
+      "eas": {
+        "projectId": "892b3a8d-43b3-477f-ab22-2a8a8b253708"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
