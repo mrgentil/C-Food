@@ -9,6 +9,7 @@
 @endsection
 
 @section('content')
+    <!-- Stats Row -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
         <x-admin.stat-card label="Commandes totales" :value="$stats['orders_count']" color="blue">
             <x-slot name="icon">
@@ -32,129 +33,149 @@
         </x-admin.stat-card>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <x-admin.card title="Commandes par jour">
-            <div class="h-[280px]"><canvas id="ordersChart"></canvas></div>
-        </x-admin.card>
-        <x-admin.card title="Revenu par mois">
-            <div class="h-[280px]"><canvas id="revenueChart"></canvas></div>
-        </x-admin.card>
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div class="lg:col-span-2">
+            <x-admin.card title="Revenus (30 derniers jours)">
+                <div class="h-[300px]"><canvas id="revenueChart"></canvas></div>
+            </x-admin.card>
+        </div>
+        <div class="lg:col-span-1">
+            <x-admin.card title="Répartition des commandes">
+                <div class="h-[300px]"><canvas id="statusChart"></canvas></div>
+            </x-admin.card>
+        </div>
     </div>
 
-    <x-admin.data-panel title="Commandes récentes" description="Dernières activités sur la plateforme.">
-        <table class="admin-table min-w-full">
-            <thead>
-                <tr>
-                    <th class="px-6 py-3 text-left">ID</th>
-                    <th class="px-6 py-3 text-left">Client</th>
-                    <th class="px-6 py-3 text-left">Total</th>
-                    <th class="px-6 py-3 text-left">Statut</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($recentOrders as $order)
-                    <tr>
-                        <td class="px-6 py-4 text-sm font-semibold text-slate-900"><a href="{{ route('admin.orders.show', $order) }}" class="hover:text-blue-600">#{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}</a></td>
-                        <td class="px-6 py-4 text-sm text-slate-600">{{ $order->user->name ?? 'N/A' }}</td>
-                        <td class="px-6 py-4 text-sm font-medium text-slate-800">{{ number_format($order->total, 0, ',', ' ') }} FC</td>
-                        <td class="px-6 py-4">
-                            @php
-                                $statusColors = [
-                                    'pending' => 'gray',
-                                    'preparing' => 'amber',
-                                    'picked_up' => 'blue',
-                                    'delivering' => 'indigo',
-                                    'delivered' => 'green',
-                                    'cancelled' => 'red',
-                                ];
-                                $color = $statusColors[$order->status] ?? 'gray';
-                                $statusLabels = [
-                                    'pending' => 'En attente',
-                                    'preparing' => 'Préparation',
-                                    'picked_up' => 'Récupérée',
-                                    'delivering' => 'En livraison',
-                                    'delivered' => 'Livrée',
-                                    'cancelled' => 'Annulée',
-                                ];
-                                $label = $statusLabels[$order->status] ?? ucfirst($order->status);
-                            @endphp
-                            <x-admin.badge variant="{{ $color }}">{{ $label }}</x-admin.badge>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="px-6 py-4 text-center text-sm text-slate-500">Aucune commande récente</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </x-admin.data-panel>
+    <!-- Top Restaurants & Recent Orders Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        
+        <!-- Top 5 Restaurants -->
+        <div class="lg:col-span-1">
+            <x-admin.card title="Top 5 Établissements">
+                <ul class="divide-y divide-gray-100 dark:divide-gray-800">
+                    @foreach($topRestaurants as $idx => $rest)
+                        <li class="py-3 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-brand-500/10 text-brand-600 flex items-center justify-center font-bold text-sm">
+                                    {{ $idx + 1 }}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-white">{{ $rest->name }}</p>
+                                    <p class="text-xs text-dark-muted">{{ $rest->type }}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-bold text-white">{{ $rest->orders_count }}</p>
+                                <p class="text-xs text-dark-muted">cmdes</p>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            </x-admin.card>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="lg:col-span-2">
+            <x-admin.data-panel title="Commandes récentes" description="Dernières activités sur la plateforme.">
+                <table class="admin-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 text-left">ID</th>
+                            <th class="px-6 py-3 text-left">Client</th>
+                            <th class="px-6 py-3 text-left">Total</th>
+                            <th class="px-6 py-3 text-left">Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($recentOrders as $order)
+                            <tr>
+                                <td class="px-6 py-4 text-sm font-semibold text-white"><a href="{{ route('admin.orders.show', $order) }}" class="hover:text-brand-500">#{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}</a></td>
+                                <td class="px-6 py-4 text-sm text-dark-muted">{{ $order->user->name ?? 'N/A' }}</td>
+                                <td class="px-6 py-4 text-sm font-medium text-white">{{ number_format($order->total, 0, ',', ' ') }} FC</td>
+                                <td class="px-6 py-4">
+                                    @php
+                                        $statusColors = ['pending' => 'gray', 'preparing' => 'amber', 'picked_up' => 'blue', 'delivering' => 'indigo', 'delivered' => 'green', 'cancelled' => 'red'];
+                                        $color = $statusColors[$order->status] ?? 'gray';
+                                        $statusLabels = ['pending' => 'En attente', 'preparing' => 'Préparation', 'picked_up' => 'Récupérée', 'delivering' => 'En livraison', 'delivered' => 'Livrée', 'cancelled' => 'Annulée'];
+                                        $label = $statusLabels[$order->status] ?? ucfirst($order->status);
+                                    @endphp
+                                    <x-admin.badge variant="{{ $color }}">{{ $label }}</x-admin.badge>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-center text-sm text-dark-muted">Aucune commande récente</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </x-admin.data-panel>
+        </div>
+
+    </div>
 @endsection
 
 @section('scripts')
     <script>
-        const chartDefaults = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-        };
+        // Use custom dark theme colors for text and grids
+        Chart.defaults.color = '#a1a1aa'; // text-zinc-400
+        Chart.defaults.scale.grid.color = '#27272a'; // border-zinc-800
 
-        async function loadStats() {
-            try {
-                const res = await fetch('/api/admin/stats', { headers: { 'Accept': 'application/json' } });
-                const data = await res.json();
-                updateOrdersChart(data.orders_per_day || []);
-                updateRevenueChart(data.revenue_per_month || []);
-            } catch (e) {
-                console.error('Error loading stats:', e);
+        // 1. Revenue Chart
+        const chartRevenue = @json($chartRevenue);
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'line',
+            data: {
+                labels: chartRevenue.labels,
+                datasets: [{
+                    label: 'Revenu (FC)',
+                    data: chartRevenue.data,
+                    borderColor: '#f97316', // brand-500
+                    backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#1c1c1e',
+                    pointBorderColor: '#f97316',
+                    pointBorderWidth: 2,
+                    pointRadius: 3,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true }
+                }
             }
-        }
+        });
 
-        function updateOrdersChart(ordersData) {
-            const labels = ordersData.map(d => new Date(d.date).toLocaleDateString('fr-FR', { weekday: 'short' }));
-            const values = ordersData.map(d => d.count);
-            new Chart(document.getElementById('ordersChart'), {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: 'Commandes',
-                        data: values,
-                        borderColor: '#EB1700', // DoorDash Red
-                        backgroundColor: 'rgba(235, 23, 0, 0.08)',
-                        tension: 0.35,
-                        fill: true,
-                        borderWidth: 3,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#EB1700',
-                    }],
-                },
-                options: chartDefaults,
-            });
-        }
-
-        function updateRevenueChart(revenueData) {
-            const labels = revenueData.map(d => {
-                const [year, month] = d.month.split('-');
-                return new Date(year, month - 1).toLocaleDateString('fr-FR', { month: 'short' });
-            });
-            const values = revenueData.map(d => d.total);
-            new Chart(document.getElementById('revenueChart'), {
-                type: 'bar',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: 'Revenu (FC)',
-                        data: values,
-                        backgroundColor: '#D11500', // Darker DoorDash Red for bars
-                        borderRadius: 6,
-                    }],
-                },
-                options: chartDefaults,
-            });
-        }
-
-        loadStats();
+        // 2. Status Doughnut Chart
+        const chartStatus = @json($chartStatus);
+        new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: chartStatus.labels,
+                datasets: [{
+                    data: chartStatus.data,
+                    backgroundColor: chartStatus.colors,
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 20, usePointStyle: true, pointStyle: 'circle' }
+                    }
+                }
+            }
+        });
     </script>
 @endsection

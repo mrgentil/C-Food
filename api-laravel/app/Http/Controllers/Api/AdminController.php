@@ -159,7 +159,53 @@ class AdminController extends BaseController
             ->limit(5)
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'recentOrders'));
+        // 1. Revenue last 30 days
+        $thirtyDaysAgo = Carbon::today()->subDays(29);
+        $dailyRevenue = Order::where('status', '!=', 'cancelled')
+            ->where('created_at', '>=', $thirtyDaysAgo)
+            ->selectRaw('DATE(created_at) as date, SUM(total) as daily_total')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->keyBy('date');
+            
+        $revenueDates = [];
+        $revenueValues = [];
+        for ($i = 0; $i < 30; $i++) {
+            $date = (clone $thirtyDaysAgo)->addDays($i)->format('Y-m-d');
+            $revenueDates[] = Carbon::parse($date)->format('d M');
+            $revenueValues[] = isset($dailyRevenue[$date]) ? (float) $dailyRevenue[$date]->daily_total : 0;
+        }
+        $chartRevenue = ['labels' => $revenueDates, 'data' => $revenueValues];
+
+        // 2. Orders by Status
+        $statusCounts = Order::selectRaw('status, count(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+        
+        $statusColors = [
+            'pending' => '#f59e0b',    // yellow-500
+            'preparing' => '#3b82f6',  // blue-500
+            'picked_up' => '#8b5cf6',  // violet-500
+            'delivering' => '#06b6d4', // cyan-500
+            'delivered' => '#10b981',  // green-500
+            'cancelled' => '#ef4444'   // red-500
+        ];
+        
+        $chartStatus = [
+            'labels' => array_map('ucfirst', array_keys($statusCounts)),
+            'data' => array_values($statusCounts),
+            'colors' => array_map(fn($status) => $statusColors[$status] ?? '#6b7280', array_keys($statusCounts))
+        ];
+
+        // 3. Top 5 Restaurants
+        $topRestaurants = Restaurant::withCount('orders')
+            ->orderByDesc('orders_count')
+            ->limit(5)
+            ->get();
+
+        return view('admin.dashboard', compact('stats', 'recentOrders', 'chartRevenue', 'chartStatus', 'topRestaurants'));
     }
 
     public function webOrders()

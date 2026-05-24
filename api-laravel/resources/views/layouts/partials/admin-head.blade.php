@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v=4">
 <script>
     tailwind.config = {
+        darkMode: 'class', // We will force dark mode
         theme: {
             extend: {
                 fontFamily: {
@@ -15,21 +16,28 @@
                 },
                 colors: {
                     brand: {
-                        50: '#FDE8E5',
-                        100: '#FBD2CC',
-                        200: '#F8A599',
-                        300: '#F47766',
-                        400: '#F14A33',
-                        500: '{{ $primaryColor }}',
-                        600: '#D11500',
-                        700: '#B81200',
-                        800: '#9E0F00',
-                        900: '#850D00',
+                        50: '#e0f2fe',
+                        100: '#bae6fd',
+                        200: '#7dd3fc',
+                        300: '#38bdf8',
+                        400: '#0ea5e9', // C-Food Blue
+                        500: '#0284c7', // Darker Blue
+                        600: '#0369a1',
+                        700: '#075985',
+                        800: '#0c4a6e',
+                        900: '#082f49',
                     },
+                    dark: {
+                        bg: '#000000',
+                        card: '#1c1c1e',
+                        border: '#2c2c2e',
+                        text: '#ffffff',
+                        muted: '#a1a1aa'
+                    }
                 },
                 boxShadow: {
-                    soft: '0 2px 10px rgba(0, 0, 0, 0.05)',
-                    card: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                    soft: '0 4px 20px rgba(0, 0, 0, 0.4)',
+                    card: '0 8px 30px rgba(0, 0, 0, 0.5)',
                 },
             },
         },

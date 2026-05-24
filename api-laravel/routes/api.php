@@ -52,6 +52,7 @@ Route::get('/categories/{id}/restaurants', [CategoryController::class, 'restaura
 
 Route::get('/shop-types', [ShopTypeController::class, 'index']);
 Route::get('/brands', [BrandController::class, 'index']);
+Route::get('/ad-banners', [App\Http\Controllers\AdBannerController::class, 'index']);
 
 Route::get('/restaurants', [RestaurantController::class, 'index']);
 Route::get('/restaurants/featured', [RestaurantController::class, 'featured']);

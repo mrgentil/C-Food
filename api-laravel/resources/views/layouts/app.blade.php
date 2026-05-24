@@ -8,12 +8,12 @@
     @include('layouts.partials.admin-head')
     @yield('head')
 </head>
-<body class="admin-app bg-gray-50 flex h-screen overflow-hidden antialiased text-gray-900">
+<body class="admin-app bg-dark-bg flex h-screen overflow-hidden antialiased text-dark-text dark">
     @include('layouts.sidebar')
 
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
         @hasSection('header')
-            <header class="shrink-0 bg-white border-b border-gray-200 px-8 py-5 flex items-center justify-between z-10 sticky top-0">
+            <header class="shrink-0 bg-dark-card border-b border-dark-border px-8 py-5 flex items-center justify-between z-10 sticky top-0">
                 @yield('header')
             </header>
         @endif

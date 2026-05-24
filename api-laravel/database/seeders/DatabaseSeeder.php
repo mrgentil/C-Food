@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             AppTabSeeder::class,
             CfoodDemoSeeder::class,
             SupermarketSeeder::class,
+            AdBannerSeeder::class,
         ]);
     }
 }

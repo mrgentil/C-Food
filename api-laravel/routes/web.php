@@ -58,6 +58,41 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {
     Route::put('/categories/{category}', [AdminCategoryWebController::class, 'update'])->name('admin.categories.update');
     Route::delete('/categories/{category}', [AdminCategoryWebController::class, 'destroy'])->name('admin.categories.destroy');
 
+    // Marques (Brands)
+    Route::get('/brands', [App\Http\Controllers\AdminBrandWebController::class, 'index'])->name('admin.brands');
+    Route::get('/brands/create', [App\Http\Controllers\AdminBrandWebController::class, 'create'])->name('admin.brands.create');
+    Route::post('/brands', [App\Http\Controllers\AdminBrandWebController::class, 'store'])->name('admin.brands.store');
+    Route::get('/brands/{brand}/edit', [App\Http\Controllers\AdminBrandWebController::class, 'edit'])->name('admin.brands.edit');
+    Route::put('/brands/{brand}', [App\Http\Controllers\AdminBrandWebController::class, 'update'])->name('admin.brands.update');
+    Route::delete('/brands/{brand}', [App\Http\Controllers\AdminBrandWebController::class, 'destroy'])->name('admin.brands.destroy');
+
+    // Publicités (Ad Banners)
+    Route::get('/banners', [App\Http\Controllers\AdminAdBannerWebController::class, 'index'])->name('admin.banners');
+    Route::get('/banners/create', [App\Http\Controllers\AdminAdBannerWebController::class, 'create'])->name('admin.banners.create');
+    Route::post('/banners', [App\Http\Controllers\AdminAdBannerWebController::class, 'store'])->name('admin.banners.store');
+    Route::get('/banners/{banner}/edit', [App\Http\Controllers\AdminAdBannerWebController::class, 'edit'])->name('admin.banners.edit');
+    Route::put('/banners/{banner}', [App\Http\Controllers\AdminAdBannerWebController::class, 'update'])->name('admin.banners.update');
+    Route::delete('/banners/{banner}', [App\Http\Controllers\AdminAdBannerWebController::class, 'destroy'])->name('admin.banners.destroy');
+
+    // Notifications Push
+    Route::get('/push', [App\Http\Controllers\Api\AdminPushController::class, 'index'])->name('admin.push');
+    Route::post('/push', [App\Http\Controllers\Api\AdminPushController::class, 'store'])->name('admin.push.store');
+
+    // Paiements Marchands (Payouts)
+    Route::get('/payouts', [App\Http\Controllers\Api\AdminPayoutController::class, 'index'])->name('admin.payouts');
+    Route::post('/payouts/generate', [App\Http\Controllers\Api\AdminPayoutController::class, 'generate'])->name('admin.payouts.generate');
+    Route::put('/payouts/{payout}/mark-paid', [App\Http\Controllers\Api\AdminPayoutController::class, 'markAsPaid'])->name('admin.payouts.markAsPaid');
+
+    // Support Client (Tickets)
+    Route::get('/tickets', [App\Http\Controllers\Api\AdminTicketController::class, 'index'])->name('admin.tickets');
+    Route::get('/tickets/{ticket}', [App\Http\Controllers\Api\AdminTicketController::class, 'show'])->name('admin.tickets.show');
+    Route::post('/tickets/{ticket}/reply', [App\Http\Controllers\Api\AdminTicketController::class, 'reply'])->name('admin.tickets.reply');
+    Route::put('/tickets/{ticket}/status', [App\Http\Controllers\Api\AdminTicketController::class, 'updateStatus'])->name('admin.tickets.updateStatus');
+
+    // Dispatch Live Map
+    Route::get('/dispatch', [App\Http\Controllers\Api\AdminDispatchController::class, 'index'])->name('admin.dispatch');
+    Route::get('/dispatch-data', [App\Http\Controllers\Api\AdminDispatchController::class, 'data'])->name('admin.dispatch.data');
+
     // Onglets app (Épicerie, Pharmacie…)
     Route::get('/app-tabs', [AdminAppTabWebController::class, 'index'])->name('admin.appTabs');
     Route::get('/app-tabs/create', [AdminAppTabWebController::class, 'create'])->name('admin.appTabs.create');
